@@ -8,10 +8,11 @@ hash str = 1
 -- ABOVE PLACEHOLDERS SHOULD BE REMOVED WHEN OTHER MODULES ARE IN PLACE
 
 
+
 type RevisionID = Int
-type Revision = (RevisionID, [FileLog]) -- Revision has a Revision ID (cf. Changeset ID), and a list of FileLog (cf. Revlog)
+type Revision = (RevisionID, FileLog, [FileLog]) -- Revision has a Revision ID (cf. Changeset ID), manifest (FileLog), and a list of FileLog (cf. Revlog)
 type FileID = Int
-type FileLog = (FileID, Graph FileVersion) -- FileLog has a FileID, and a graph of FileVersions (each version has a pointer to two parents)
+type FileLog = (NodeID, Graph FileVersion) -- FileLog has a NodeID pointing to current version, and a graph of FileVersions (each version has a pointer to two parents)
 type NodeID = Int
 type FileVersion = (NodeID, ByteString) -- FileVersion has a NodeID, and a string of file contents
 
@@ -30,6 +31,21 @@ createVersion :: ByteString -> (NodeID, NodeID) -> FileVersion
 --  version :: FileVersion : a version with a NodeID created from hashing contents and parent NodeIDs
 createVersion contents (p1, p2) =
   ((hash (contents <> (intToByteString p1) <> (intToByteString p2))), contents)
+
+
+createFileLog :: () -> FileLog
+createFileLog () = (0, Empty)
+
+
+-- revise :: Revision -> [FileLog] -> Revision
+-- add_version :: FileLog -> FileVersion -> FileLog
+-- get_version :: FileLog -> Int -> FileVersion
+-- store :: Repository -> Revision -> Repository
+-- merge :: Revision -> Revision -> Maybe Revision
+-- retrieve :: Repository -> Int -> Maybe Revision
+-- track :: [FileLog] -> FileLog -> [FileLog]
+-- untrack :: [FileLog] -> FileLog -> [FileLog]
+
 
 
 main = do
