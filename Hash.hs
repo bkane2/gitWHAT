@@ -12,4 +12,3 @@ module Hash where
 
     fromHex :: Text -> Maybe BS.ByteString
     fromHex = TH.decodeHex
-
