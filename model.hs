@@ -36,14 +36,3 @@ type FileLog = Graph FileVersion
 type NodeID = Int
 type FileContents = ByteString
 type FileVersion = (NodeID, FileContents)
-
-
-
-
-
-
--- add_version :: FileLog -> FileVersion -> FileLog
--- get_version :: FileLog -> Int -> FileVersion
--- store :: Repository -> Revision -> Repository
--- merge :: Revision -> Revision -> Maybe Revision
--- retrieve :: Repository -> Int -> Maybe Revision
