@@ -2,4 +2,6 @@ test/*
 TODO*
 *.hi
 *.o
-model
+Model
+TestModel
+TestGraph
