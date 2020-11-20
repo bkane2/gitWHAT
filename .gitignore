@@ -1,7 +1,15 @@
+# Directory for testing DVCS
 test/*
+
+# TODO lists
 TODO*
+
+# Intermediate object files
+obj
 *.hi
 *.o
+
+# Final executables
 Model
 TestModel
 TestGraph
