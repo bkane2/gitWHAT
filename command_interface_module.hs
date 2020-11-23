@@ -15,6 +15,18 @@ splitString = splitWords . dropWhile (==' ')
    --the remaining from after the space to send back recursively to finish getting each string
    in singleWord : splitWords (dropWhile (==' ') xs)
 
+--tests to see if correct command is inputted, if so
+--returns true and then will be used for "testForValidParameters"
+--function if returned true
+testForValidityOfCommand :: String -> Int
+testForValidityOfCommand input
+ | (input == " ") = -1
+ | (input == "push") = 0
+ | otherwise = -1
+
+--based on if valid command, if so then will take in next parameters
+--based on command, 
+-- testForValidParameters :: Int -> [String] -> String
 
 -- printString :: [String] -> String
 -- printString [] = return ()
@@ -26,8 +38,7 @@ main :: IO ()
 main = do
 line <- getLine
 let words = splitString line
-fmap print words --tests so far to print out each string
-
-testForValidity :: String -> Bool
-testForValidity = ""
-
+let first = testForValidityOfCommand (words !! 0)
+-- print (testForValidityOfCommand first)
+print first
+print (fmap testForValidityOfCommand words) --tests 
