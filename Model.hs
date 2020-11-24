@@ -14,31 +14,6 @@ import qualified Data.ByteString.Char8 as C
 hashNodeID :: ByteString -> NodeID
 hashNodeID str = H.hash str
 
--- -- Creates an empty NodeIDTable
--- emptyNodeIDRecord :: NodeIDRecord
--- emptyNodeIDRecord = (0, Map.empty)
-
--- -- Inserts a pair of a ByteString key and a NodeID value into the table
--- insertNodeIDTable :: ByteString -> NodeID -> NodeIDTable -> NodeIDTable
--- insertNodeIDTable k v table = Map.insert k v table
-
--- -- Gets the NodeID at a certain ByteString key
--- getNodeIDTable :: ByteString -> NodeIDTable -> NodeID
--- getNodeIDTable k table = case (Map.lookup k table) of
---   Just a -> a
---   Nothing -> 0
-
--- -- If ByteString already has NodeID associated in table, return that, otherwise increment idx and store new NodeID
--- formNodeID :: ByteString -> NodeIDRecord -> (NodeID, NodeIDRecord)
--- formNodeID k (idx, table)
---   | intable == True  = ((getNodeIDTable k table), (idx, table))
---   | intable == False = (idx+1, (idx+1, (insertNodeIDTable k (idx+1) table)))
---   where intable = Map.member k table
-
--- -- NodeIDRecord is a hash map of ByteString to NodeID (aka NodeIDTable), together with a NodeID increment
--- type NodeIDTable = Map ByteString NodeID
--- type NodeIDRecord = (NodeID, NodeIDTable)
-
 -- ByteString conversion functions
 intToByteString :: Int -> ByteString
 intToByteString i = strToByteString (show i)
