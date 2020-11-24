@@ -1,6 +1,7 @@
 module Model where
 
-import Tree as G
+import Tree as T
+import Tree (Tree)
 
 -- The following can probably be refactored at some point (some are unused as well)
 ---------------------------------------------------------------------------------------------------------------

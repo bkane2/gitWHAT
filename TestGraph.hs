@@ -1,12 +1,7 @@
-import Graph as G 
+import Tree as T 
+import View as V
 
-graph = G.addEdge (1,2) (G.addEdge (0, 1) (G.addVertex 2 (G.addVertex 1 G.initGraph)))
+tree = Branch 3 (Branch 2 (Branch 1 Empty Empty) Empty) (Branch 1 Empty Empty)
 
 main = do
-    print(graph)
-    print(neighbors 0 graph)
-    print(reachable 0 graph)
-    print(neighbors 2 graph)
-    print(neighbors 0 (delEdge (0, 1) graph))
-    print(path 0 1 graph)
-    
+    putStrLn $ T.printTree tree

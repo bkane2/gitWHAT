@@ -1,7 +1,12 @@
 module CommandInterface where
 
 import System.Environment
+import Model as M
 -- import Data.List.Split
+import Tree as T
+import Graph as G
+import TrackingList as TL
+import qualified View as V
 
 splitString :: String -> [String]
 --dropWhile will create a list from another when all parameters met are true.
@@ -25,6 +30,59 @@ testForValidityOfCommand input
  | (input == " ") = -1
  | (input == "push") = 0
  | otherwise = -1
+
+-- executeCommand :: [String] -> Either (IO ()) a
+-- executeCommand ["init"] = Right initRepo
+-- executeCommand ["clone", repo] = Right (clone repo)
+-- executeCommand ("add" : files) = foldl track files
+-- executeCommand ("remove" : files) = foldl untrack files
+-- executeCommand ["status"] = status
+-- executeCommand ["heads"] = heads
+-- executeCommand ["diff", rev1, rev2] = diff rev1 rev2
+-- executeCommand ["cat", file, rev] = cat file rev
+-- executeCommand ["checkout", rev] = checkout rev
+-- executeCommand ["commit"] = commit
+-- executeCommand _ = Left (print "I don't understand that command.")
+
+-- Initializes an empty repository
+initRepo :: M.Repository
+initRepo = (1, T.initTree, [])
+ 
+-- Clones a repository given it's repository Id and the list of repositories it
+-- is stored in, returns a new list of repositories with the clone
+clone :: [Repository] -> RepositoryID -> Maybe [Repository]
+clone [] _ = Nothing
+clone repo_list id = search repo_list [] id where
+   search repo_list visited id = case repo_list of 
+      [] -> Nothing
+      (repo_id, flog, flog_list) : t -> if repo_id == id then  
+          Just (visited ++ [(repo_id, flog, flog_list)] ++ t ++ [(new_id + 1, flog, flog_list)]) else
+          search t (visited ++ [(repo_id, flog, flog_list)]) id 
+          where
+            (new_id, _, _) = last t
+
+-- Adds a list of files (second argument) to the given tracking list (first argument)
+add :: [FileID] -> [FileID] -> [FileID]
+add = foldl TL.track 
+
+-- Removes a list of files (second argument) from the given tracking list (first
+-- argument)
+remove :: [FileID] -> [FileID] -> [FileID]
+remove = foldl TL.untrack
+
+-- Forwards 'status' command to view hiding module
+status :: Repository -> [IO ()]
+status = V.status
+
+-- heads :: IO ()
+
+-- diff :: Revision -> Revision -> 
+
+-- cat :: FileID -> Revision -> 
+
+-- checkout :: Revision -> 
+
+-- commit :: () -> 
 
 --based on if valid command, if so then will take in next parameters
 --based on command, 
