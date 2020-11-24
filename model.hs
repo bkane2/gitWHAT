@@ -6,6 +6,7 @@ module Model where
 -- import Crypto.Hash.SHA1 (hashlazy)
 import Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
+import Tree as T
 
 -- TODO: remove this line and uncomment Graph import statement above once Graph module finished
 data Graph a = Empty | Node a (Graph a) (Graph a) deriving Show
@@ -31,7 +32,7 @@ type RevisionID = Int
 type Revision = (RevisionID, NodeID)
 -- FileLog is a graph of FileVersion (each node is a FileVersion with two parents)
 type FileID = Int
-type FileLog = Graph FileVersion
+type FileLog = T.Tree FileVersion
 -- FileVersion is a unique NodeID together with ByteString contents
 type NodeID = Int
 type FileContents = ByteString

@@ -1,11 +1,12 @@
 module Graph where
+import Model as M
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
 
 -- Datatypes
-type Vertex = Int -- Vertex is an integer
+type Vertex = FileVersion -- Vertex is an integer
 type Edge = (Vertex, Vertex) -- Edge is a tuple of vertexes
 type Graph = Map Vertex (Set Vertex) 
     -- Graph is a map of vertexes to sets of vertexes (essentially an adjacency list)
