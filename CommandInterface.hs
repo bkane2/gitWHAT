@@ -1,3 +1,5 @@
+module CommandInterface where
+
 import System.Environment
 -- import Data.List.Split
 
@@ -33,12 +35,3 @@ testForValidityOfCommand input
 -- printString (x:xs) = do
 --  putStrLn x
 --  printString xs
-
-main :: IO ()
-main = do
-line <- getLine
-let words = splitString line
-let first = testForValidityOfCommand (words !! 0)
--- print (testForValidityOfCommand first)
-print first
-print (fmap testForValidityOfCommand words) --tests 
