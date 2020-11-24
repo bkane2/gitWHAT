@@ -1,5 +1,6 @@
 module Tree where
 import Data.Maybe (isNothing, fromJust)
+import qualified Data.Tree as T
 
 -- A Tree is either Empty or a Branch of type a with two parent trees
 data Tree a = Empty | Branch a (Tree a) (Tree a) deriving Show
@@ -48,3 +49,11 @@ addTwoParents c p1 p2 t =
     where
         r1 = getTree p1 t
         r2 = getTree p2 t
+
+
+toDataTree :: (Show a) => Tree a -> T.Tree [Char]
+toDataTree Empty = T.Node "" []
+toDataTree (Branch a t1 t2) = T.Node (show a) [toDataTree t1, toDataTree t2]
+
+printTree ::(Show a) => Tree a -> String 
+printTree t = T.drawTree (toDataTree t)

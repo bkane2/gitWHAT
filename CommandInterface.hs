@@ -6,6 +6,7 @@ import Model as M
 import Tree as T
 import Graph as G
 import TrackingList as TL
+import qualified View as V
 
 splitString :: String -> [String]
 --dropWhile will create a list from another when all parameters met are true.
@@ -43,9 +44,12 @@ testForValidityOfCommand input
 -- executeCommand ["commit"] = commit
 -- executeCommand _ = Left (print "I don't understand that command.")
 
+-- Initializes an empty repository
 initRepo :: M.Repository
 initRepo = (1, T.initTree, [])
  
+-- Clones a repository given it's repository Id and the list of repositories it
+-- is stored in, returns a new list of repositories with the clone
 clone :: [Repository] -> RepositoryID -> Maybe [Repository]
 clone [] _ = Nothing
 clone repo_list id = search repo_list [] id where
@@ -57,13 +61,18 @@ clone repo_list id = search repo_list [] id where
           where
             (new_id, _, _) = last t
 
-add :: [FileID] -> [FileId] -> [FileId]
-add track_list new_files = foldl TL.track 
+-- Adds a list of files (second argument) to the given tracking list (first argument)
+add :: [FileID] -> [FileID] -> [FileID]
+add = foldl TL.track 
 
-remove :: [FileID] -> [FileId] -> [FileId]
-remove track_list new_files = foldl TL.untrack
+-- Removes a list of files (second argument) from the given tracking list (first
+-- argument)
+remove :: [FileID] -> [FileID] -> [FileID]
+remove = foldl TL.untrack
 
--- status :: Repository -> IO ()
+-- Forwards 'status' command to view hiding module
+status :: Repository -> [IO ()]
+status = V.status
 
 -- heads :: IO ()
 
