@@ -7,8 +7,8 @@ import Data.List (delete)
 -- when creating a new revision (e.g. during a commit)
 
 -- TODO: these should probably just be lists of filenames (strings?) being tracked, rather than FileLog
-track :: [FileID] -> FileID -> [FileID]
+track :: [String] -> String -> [String]
 track f_list f = if f `elem` f_list then f_list else f_list ++ [f] 
 
-untrack :: [FileID] -> FileID -> [FileID]
+untrack :: [String] -> String -> [String]
 untrack f_list f = delete f f_list
