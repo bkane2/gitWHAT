@@ -4,8 +4,8 @@ import Tree as G
 import Model as M
 
 -- Create an empty FileLog
-createFileLog :: FileLog
-createFileLog = Empty
+createFileLog :: FileName -> FileLog
+createFileLog fname = (fname, Empty)
 
 -- add_version :: FileLog -> FileVersion -> FileLog
 -- get_version :: FileLog -> Int -> FileVersion
