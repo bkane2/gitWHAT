@@ -13,4 +13,4 @@ createVersion :: FileContents -> (NodeID, NodeID) -> FileVersion
 -- Returns:
 --  version :: FileVersion : a version with a NodeID created from hashing contents and parent NodeIDs
 createVersion contents (p1, p2) =
-  ((hash (contents <> (intToByteString p1) <> (intToByteString p2))), contents)
+  ((hashNodeID (contents <> (intToByteString p1) <> (intToByteString p2))), contents)
