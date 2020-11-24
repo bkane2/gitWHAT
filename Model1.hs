@@ -49,7 +49,7 @@ strToByteString str = C.pack str
 
 -- Repository consists of a manifest (FileLog) and a list of FileLog for each file being versioned
 type RepositoryID = Int
-type Repository = (RepositoryID, FileLog, [FileLog], [Revision])
+type Repository = (RepositoryID, [Revision], FileLog, [FileLog])
 -- Revision is a unique RevisionID and a NodeID pointing to a particular version of the manifest FileLog
 type RevisionID = Int
 type Revision = (RevisionID, NodeID)
