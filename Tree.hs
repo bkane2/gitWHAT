@@ -36,6 +36,16 @@ getNode n (Branch a b c)
         result = getNode n b
 
 -- Returns entire trie of the specified node from the given tree
+getTreeKey :: (Eq a) => Int -> (a -> Int) -> Tree a -> Maybe (Tree a)
+getTreeKey _ _ Empty = Nothing
+getTreeKey n f (Branch a b c) 
+    | n == (f a) = Just (Branch a b c)
+    | isNothing result = getTreeKey n f c 
+    | otherwise = result
+    where
+        result = getTreeKey n f b
+
+-- Returns entire trie of the specified node from the given tree
 getTree :: (Eq a) => a -> Tree a -> Maybe (Tree a)
 getTree _ Empty = Nothing
 getTree n (Branch a b c) 
@@ -55,6 +65,16 @@ addOneParent c p t =
     else Just (Branch c (fromJust r1) Empty)
     where 
         r1 = getTree p t
+
+-- Adds a given child, to the two specified parents in the given tree
+addTwoParentsKey :: (Eq a) => a -> Int -> Int -> (a -> Int) -> Tree a -> Maybe (Tree a)
+addTwoParentsKey _ _ _ _ Empty = Nothing
+addTwoParentsKey c p1 p2 f t = 
+    if isNothing r1 || isNothing r2 then Nothing
+    else Just (Branch c (fromJust r1) (fromJust r2))
+    where
+        r1 = getTreeKey p1 f t
+        r2 = getTreeKey p2 f t
 
 -- Adds a given child, to the two specified parents in the given tree
 addTwoParents :: (Eq a) => a -> a -> a -> Tree a -> Maybe (Tree a)
