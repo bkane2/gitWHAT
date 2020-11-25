@@ -59,6 +59,14 @@ commit :: a -> Tree a -> Tree a
 commit n t = Branch n t Empty
 
 -- Adds a given child, to the specified parent in the given tree
+addOneParentKey :: (Eq a) => a -> Int -> (a -> Int) -> Tree a -> Maybe (Tree a)
+addOneParentKey c p f t = 
+    if isNothing r1 then Nothing 
+    else Just (Branch c (fromJust r1) Empty)
+    where 
+        r1 = getTreeKey p f t
+
+-- Adds a given child, to the specified parent in the given tree
 addOneParent :: (Eq a) => a -> a -> Tree a -> Maybe (Tree a)
 addOneParent c p t = 
     if isNothing r1 then Nothing 
