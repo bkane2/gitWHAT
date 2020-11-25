@@ -2,32 +2,16 @@ module Model where
 
 import Tree as T
 import Tree (Tree)
+import Util as U
 
--- The following can probably be refactored at some point (some are unused as well)
----------------------------------------------------------------------------------------------------------------
-import Data.Hashable as H
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 
--- Create NodeID by hashing on ByteString
-hashNodeID :: ByteString -> NodeID
-hashNodeID str = H.hash str
-
--- ByteString conversion functions
-intToByteString :: Int -> ByteString
-intToByteString i = strToByteString (show i)
-strToByteString :: String -> ByteString
-strToByteString str = C.pack str
----------------------------------------------------------------------------------------------------------------
-
-
 -- Repository consists of a manifest (FileLog) and a list of FileLog for each file being versioned
-type RepositoryID = Int
+type RepositoryID = String
 type Repository = (RepositoryID, [Revision], FileLog, [FileLog])
 -- Revision is a unique RevisionID and a NodeID pointing to a particular version of the manifest FileLog
-type RevisionID = Int
+type RevisionID = String
 type Revision = (RevisionID, NodeID)
 -- FileLog is a tree of FileVersion (each node is a FileVersion with two parents)
 type FileID = Int
@@ -37,3 +21,14 @@ type FileLog = (FileName, Tree FileVersion)
 type NodeID = Int
 type FileContents = ByteString
 type FileVersion = (NodeID, FileContents)
+-- File represents a file, i.e. FileName and FileContents
+type File = (FileName, FileContents)
+
+getFileContents :: File -> ByteString
+getFileContents (fname, fcontents) = fcontents
+
+getFileContentsFromList :: FileName -> [File] -> ByteString
+getFileContentsFromList fname [] = BS.empty
+getFileContentsFromList fname (x:xs) =
+  let (fname1, fcontents) = x
+  in if fname1 == fname then fcontents else (getFileContentsFromList fname xs)
