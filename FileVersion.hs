@@ -1,6 +1,11 @@
 module FileVersion where
 
 import Model as M
+import Util as U
+
+-- Creates an empty file version with no parents
+createEmptyVersion :: FileVersion
+createEmptyVersion = (0, U.emptyByteString)
 
 -- Create a new file version from a bytestring and two parents
 createVersion :: FileContents -> (NodeID, NodeID) -> FileVersion
