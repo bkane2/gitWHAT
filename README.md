@@ -1,6 +1,9 @@
 # gitWHAT
 DVCS for CSC 253/453
 
+# GitHub page
+https://github.com/bkane2/gitWHAT
+
 # How to compile
 ghc -outputdir obj TestModel.hs
 
