@@ -9,6 +9,11 @@ data Tree a = Empty | Branch a (Tree a) (Tree a) deriving Show
 initTree :: Tree a
 initTree = Empty
 
+-- Creates a node with given content and no parents
+createNode :: a -> Tree a
+createNode c =
+    Branch c Empty Empty
+
 -- Returns the specified node from the given tree, if it exists,
 -- using a given key function that takes input of type a and returns an Int
 getNodeKey :: (Eq a) => Int -> (a -> Int) -> Tree a -> Maybe a
