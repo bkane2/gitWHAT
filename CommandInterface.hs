@@ -28,8 +28,33 @@ splitString = splitWords . dropWhile (==' ')
 testForValidityOfCommand :: String -> Int
 testForValidityOfCommand input
  | (input == " ") = -1
- | (input == "push") = 0
+ | (input == "init") = 1
+ | (input == "clone") = 2
+ | (input == "add") = 2
+ | (input == "remove") = 2
+ | (input == "diff") = 2
+ | (input == "status") = 1
+ | (input == "cat") = 2
+ | (input == "checkout") = 1
+ | (input == "commit") = 2
  | otherwise = -1
+
+--based on if valid command, if so then will take in next parameters
+--based on command, must have testForValidityofCommand value as one input
+testForValidParameters :: Int -> [String] -> String
+testForValidParameters validity [input]  
+ | validity < 0 = "Error in input. Review what you have typed and try again."
+ | ([input] !! 0 == "clone") && validity == 2 = "Valid command! Processing..."
+ | ([input] !! 0 == "add") && validity == 2 = "Valid command! Processing..."
+ | ([input] !! 0 == "remove") && validity == 2 = "Valid command! Processing..."
+ | ([input] !! 0 == "diff") && validity == 2 = "Valid command! Processing..."
+ | ([input] !! 0 == "cat") && validity == 2 = "Valid command! Processing..."
+ | ([input] !! 0 == "commit") && validity == 2 = "Valid command! Processing..."
+ | ([input] !! 0 == "status") && validity == 1 = "Valid command! Processing..."
+ | ([input] !! 0 == "checkout") && validity == 1 = "Valid command! Processing..."
+ | ([input] !! 0 == "init") && validity == 0 = "Valid command! Processing..."
+ | otherwise = "Invalid input parameters for the function you are using..."
+
 
 -- executeCommand :: [String] -> Either (IO ()) a
 -- executeCommand ["init"] = Right initRepo
@@ -62,34 +87,37 @@ clone repo_list id = search repo_list [] id where
             (new_id, _, _) = last t
 
 -- Adds a list of files (second argument) to the given tracking list (first argument)
-add :: [String] -> [String] -> [String]
+add :: [FileID] -> [FileID] -> [FileID]
 add = foldl TL.track 
 
 -- Removes a list of files (second argument) from the given tracking list (first
 -- argument)
-remove :: [String] -> [String] -> [String]
+remove :: [FileID] -> [FileID] -> [FileID]
 remove = foldl TL.untrack
 
 -- Forwards 'status' command to view hiding module
-status :: Repository -> [IO ()]
-status = V.status
+-- status :: Repository -> [IO ()]
+-- status = V.status
 
 -- heads :: IO ()
 
--- diff :: Revision -> Revision -> 
+-- diff :: Revision -> Revision -> String
+-- diff revis1 revis2 = 
+--  if revis1 RevisionID == revis2 RevisionID then "difference not detected"
+--  else "difference detected"
+-- -- cat :: FileID -> Revision -> 
 
--- cat :: FileID -> Revision -> 
+-- -- checkout :: Revision -> 
 
--- checkout :: Revision -> 
+-- commit :: Repository -> [FileID] -> Repository
+-- commit
 
--- commit :: () -> 
+-- main :: IO ()
+-- main = do
+-- line <- getLine
+-- let words = splitString line
+-- let first = testForValidityOfCommand (words !! 0)
+-- -- print (testForValidityOfCommand first)
+-- print first
+-- print (fmap testForValidityOfCommand words) --tests 
 
---based on if valid command, if so then will take in next parameters
---based on command, 
--- testForValidParameters :: Int -> [String] -> String
-
--- printString :: [String] -> String
--- printString [] = return ()
--- printString (x:xs) = do
---  putStrLn x
---  printString xs
