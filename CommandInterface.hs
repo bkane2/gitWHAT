@@ -6,6 +6,7 @@ import Model as M
 import Tree as T
 import Graph as G
 import TrackingList as TL
+import FileLog as FL
 import qualified View as V
 
 splitString :: String -> [String]
@@ -71,7 +72,7 @@ testForValidParameters validity [input]
 
 -- Initializes an empty repository
 initRepo :: M.Repository
-initRepo = (1, T.initTree, [])
+initRepo = (1, [], createFileLog "flog", [])
  
 -- Clones a repository given it's repository Id and the list of repositories it
 -- is stored in, returns a new list of repositories with the clone
@@ -80,19 +81,19 @@ clone [] _ = Nothing
 clone repo_list id = search repo_list [] id where
    search repo_list visited id = case repo_list of 
       [] -> Nothing
-      (repo_id, flog, flog_list) : t -> if repo_id == id then  
-          Just (visited ++ [(repo_id, flog, flog_list)] ++ t ++ [(new_id + 1, flog, flog_list)]) else
-          search t (visited ++ [(repo_id, flog, flog_list)]) id 
+      (repo_id, revs, flog, flog_list) : t -> if repo_id == id then  
+          Just (visited ++ [(repo_id, revs, flog, flog_list)] ++ t ++ [(new_id + 1, revs, flog, flog_list)]) else
+          search t (visited ++ [(repo_id, revs, flog, flog_list)]) id 
           where
-            (new_id, _, _) = last t
+            (new_id, _, _, _) = last t
 
 -- Adds a list of files (second argument) to the given tracking list (first argument)
-add :: [FileID] -> [FileID] -> [FileID]
+add :: [FileName] -> [FileName] -> [FileName]
 add = foldl TL.track 
 
 -- Removes a list of files (second argument) from the given tracking list (first
 -- argument)
-remove :: [FileID] -> [FileID] -> [FileID]
+remove :: [FileName] -> [FileName] -> [FileName]
 remove = foldl TL.untrack
 
 -- Forwards 'status' command to view hiding module
