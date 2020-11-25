@@ -9,6 +9,17 @@ data Tree a = Empty | Branch a (Tree a) (Tree a) deriving Show
 initTree :: Tree a
 initTree = Empty
 
+-- Returns the specified node from the given tree, if it exists,
+-- using a given key function that takes input of type a and returns an Int
+getNodeKey :: (Eq a) => Int -> (a -> Int) -> Tree a -> Maybe a
+getNodeKey _ _ Empty = Nothing
+getNodeKey n f (Branch a b c)
+    | n == (f a) = Just a
+    | isNothing result = getNodeKey n f c
+    | otherwise = result
+    where
+        result = getNodeKey n f b
+
 -- Returns the specified node from the given tree, if it exists
 getNode :: (Eq a) => a -> Tree a -> Maybe a
 getNode _ Empty = Nothing
