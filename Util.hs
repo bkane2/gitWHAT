@@ -22,7 +22,7 @@ emptyByteString = BS.empty
 
 -- Split string by comma
 splitComma :: String -> [String]
-splitComma [] = [""]
+splitComma [] = []
 splitComma (c:cs)
   | c == ','  = "" : rest
   | otherwise = (c : Prelude.head rest) : Prelude.tail rest

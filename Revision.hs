@@ -13,10 +13,10 @@ import Data.List
 initRevision :: Revision
 initRevision = ("init", 0)
 
--- Takes a revision (RevisionID + NodeID of manifest) and a list of file names,
--- and returns a new repository with a new revision.
+-- Takes a repository, previous revision (RevisionID + NodeID of manifest) and
+-- a list of files, and returns a new repository with a new revision.
 revise :: Repository -> RevisionID -> Revision -> [File] -> Repository
-revise repo revId rev files =
+revise repo revId1 rev files =
   let (repoId, revs, man, logs) = repo
       (revId, manId) = rev
       fnames = [ a | (a,b) <- files ]
@@ -46,7 +46,7 @@ revise repo revId rev files =
       manIdNew = FV.getVersionNodeID manVersionNew
       manNew = FL.addVersion man manVersionNew manId Nothing
   -- Return updated repository
-  in (repoId, ((revId, manIdNew):revs), manNew, logsNew)
+  in (repoId, ((revId1, manIdNew):revs), manNew, logsNew)
 
 
 -- Given contents of manifest file, parse into a hash map of FileName to NodeID
@@ -77,7 +77,6 @@ nodeIDFromMap fname map = case (Map.lookup fname map) of
 -- Given a list of (FileName, NodeID) tuples, convert to string of form "fname1 id1,fname2 id2,..."
 nodeIDListToContents :: [(FileName, NodeID)] -> FileContents
 nodeIDListToContents lst = U.strToByteString (intercalate "," (map (\l -> let (a,b) = l in a++" "++(show b)) lst))
--- nodeIDListToContents lst = U.strToByteString "fname1 0,fname2 1"
 
 
 
