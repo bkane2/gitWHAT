@@ -14,3 +14,6 @@ Model
 TestModel
 TestGraph
 TestCommandInterface
+
+# Zip files
+*.zip
