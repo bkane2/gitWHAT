@@ -37,3 +37,7 @@ joinString str lst = (L.intercalate str lst)
 -- File IO (wrapper function for loading file)
 loadFile :: String -> IO ByteString
 loadFile fname = BS.readFile fname
+
+-- Creates a separator string
+createSep :: String
+createSep = "---------------------------------\n"

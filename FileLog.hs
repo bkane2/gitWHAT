@@ -36,3 +36,9 @@ fileLogLookup fname [] = createFileLog fname
 fileLogLookup fname (x:xs) =
   let (fname1, _) = x
   in if fname1 == fname then x else (fileLogLookup fname xs)
+
+-- Converts a FileLog to a string
+printFileLog :: FileLog -> String
+printFileLog log =
+  let (fname, tree) = log
+  in fname ++ " :\n" ++ (printTree tree)

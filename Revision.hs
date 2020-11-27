@@ -58,7 +58,7 @@ nodeIDMapFromManifest bstr files =
       lst = map (\l -> let (fname:xs) = (words l)
                            (id:_) = xs
                        in (fname, U.strToInt id))
-            (U.splitComma str)
+            (U.splitString str ',')
   in nodeIDListToMap [ (a,b) | (a,b) <- lst, elem a files ] Map.empty
 
 -- Takes a list of (FileName, NodeID) tuples and hash map, and recursively fills in the hash map
@@ -76,8 +76,13 @@ nodeIDFromMap fname map = case (Map.lookup fname map) of
 
 -- Given a list of (FileName, NodeID) tuples, convert to string of form "fname1 id1,fname2 id2,..."
 nodeIDListToContents :: [(FileName, NodeID)] -> FileContents
-nodeIDListToContents lst = U.strToByteString (intercalate "," (map (\l -> let (a,b) = l in a++" "++(show b)) lst))
+nodeIDListToContents lst = U.strToByteString (U.joinString "," (map (\l -> let (a,b) = l in a++" "++(show b)) lst))
 
+-- Convert a revision to a string
+printRevision :: Revision -> String
+printRevision rev = 
+  let (revID, nodeID) = rev
+  in "* revision " ++ (show nodeID) ++ "\n   - " ++ revID
 
 
 -- TODO:
