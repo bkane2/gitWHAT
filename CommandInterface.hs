@@ -88,12 +88,12 @@ clone repo_list id = search repo_list [] id where
             (new_id, _, _, _) = last t
 
 -- Adds a list of files (second argument) to the given tracking list (first argument)
-add :: [FileName] -> [FileName] -> [FileName]
+add :: [File] -> [FileName] -> [File]
 add = foldl TL.track 
 
 -- Removes a list of files (second argument) from the given tracking list (first
 -- argument)
-remove :: [FileName] -> [FileName] -> [FileName]
+remove :: [File] -> [FileName] -> [File]
 remove = foldl TL.untrack
 
 -- Forwards 'status' command to view hiding module
