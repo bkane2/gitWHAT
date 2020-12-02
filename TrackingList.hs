@@ -1,13 +1,18 @@
 module TrackingList where
 
 import Model as M
+import Util as U
 import Data.List (delete)
 
--- TODO: add functionality here which lets filenames be added/subtracted from a tracking list, which is used
--- when creating a new revision (e.g. during a commit)
+-- Initiates an empty tracking list
+emptyTrackingList :: [File]
+emptyTrackingList = []
 
-track :: [FileName] -> FileName -> [FileName]
-track f_list f = if f `elem` f_list then f_list else f_list ++ [f] 
+-- Loads a file from fname and adds file to the tracking list (if file already exists, read the most recent version)
+track :: [File] -> FileName -> [File]
+track f_list fname = if fname `elem` [ fname1 | (fname1, _) <- f_list ] then (track (untrack f_list fname) fname)
+                     else f_list ++ [(fname, U.loadFile fname)]
 
-untrack :: [FileName] -> FileName -> [FileName]
-untrack f_list f = delete f f_list
+-- Removes a file from the tracking list
+untrack :: [File] -> FileName -> [File]
+untrack f_list fname = filter (\l -> let (fname1, _) = l in fname1 /= fname) f_list
