@@ -7,8 +7,8 @@ import Util as U
 import Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 
--- Repository state consists of the repository, the active HEAD (a RevisionID) of the working directory, and a tracking list
-type RepositoryState = (Repository, RevisionID, [File])
+-- Repository state consists of the repository, the active HEAD (a Revision) of the working directory, and a tracking list
+type RepositoryState = (Repository, Revision, [File])
 -- Repository consists of a manifest (FileLog) and a list of FileLog for each file being versioned
 type RepositoryID = String
 type Repository = (RepositoryID, [Revision], FileLog, [FileLog])

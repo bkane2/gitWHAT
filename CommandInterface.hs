@@ -150,9 +150,7 @@ initRepo :: RepositoryID -> [RepositoryState] -> [RepositoryState]
 initRepo name repoStates =
    let newRepo = RP.initRepository name
        (_, revs, _, _) = newRepo
-       hdRevId = fst (head revs)
-       newRepoState = (newRepo, hdRevId, [])
-   in newRepoState : repoStates
+   in (newRepo, (head revs), []) : repoStates
 
 -- Prints the IDs of all repositories in repoStates
 printRepos :: [RepositoryState] -> String
