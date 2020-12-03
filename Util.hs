@@ -7,6 +7,7 @@ import qualified Data.ByteString.Char8 as C
 import Data.List as L
 import System.IO.Unsafe
 import System.Directory
+import Debug.Trace
 
 -- Create NodeID by hashing on ByteString
 hashNodeID :: ByteString -> Int
@@ -49,6 +50,10 @@ loadFile fname = unsafePerformIO (BS.readFile fname)
 -- Check if file exists
 fileExists :: String -> Bool
 fileExists fname = unsafePerformIO (doesFileExist fname)
+
+-- Wrapper trace function for debugging
+debug_ :: String -> a -> a
+debug_ = trace
 
 -- Creates a separator string
 createSep :: String
