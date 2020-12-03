@@ -27,4 +27,4 @@ main = do
   -- Make new revision to repository (after tracking updates in file1 and file2)
   -- Requires previous revision to be provided as an argument
   let repo2 = RV.revise repo "test revision" lastRev trackingList3
-  putStrLn ("\n"++(RP.printRepositoryVerbose repo2))
+  putStrLn ("\n"++(V.printRepositoryVerbose repo2))

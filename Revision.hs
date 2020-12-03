@@ -78,12 +78,6 @@ nodeIDFromMap fname map = case (Map.lookup fname map) of
 nodeIDListToContents :: [(FileName, NodeID)] -> FileContents
 nodeIDListToContents lst = U.strToByteString (U.joinString "," (map (\l -> let (a,b) = l in a++" "++(show b)) lst))
 
--- Convert a revision to a string
-printRevision :: Revision -> String
-printRevision rev = 
-  let (revID, nodeID) = rev
-  in "* revision " ++ (show nodeID) ++ "\n   - " ++ revID
-
 
 -- TODO:
 -- merge :: Revision -> Revision -> Maybe Revision

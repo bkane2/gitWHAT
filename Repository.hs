@@ -27,18 +27,6 @@ import Tree as T
 -- Create an empty repository
 initRepository :: RepositoryID -> Repository
 initRepository id = (id, [(RV.initRevision)], (FL.createFileLog ".manifest"), [])
-
--- Convert a repository to a string, showing log of revisions
-printRepository :: Repository -> String
-printRepository repo =
-  let (repoID, revisions, manifest, logs) = repo
-  in repoID ++ " ::\n" ++ (U.joinString "\n" (map RV.printRevision revisions))
-
--- Convert a repository to a string (printing FileLog information as well)
-printRepositoryVerbose :: Repository -> String
-printRepositoryVerbose repo =
-  let (repoID, revisions, manifest, logs) = repo
-  in (printRepository repo) ++ "\n" ++ createSep ++ (U.joinString createSep (map FL.printFileLog ([manifest]++logs)))
   
 
 -- TODO:
