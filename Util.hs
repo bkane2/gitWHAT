@@ -1,7 +1,8 @@
 module Util where
 
 import Data.Hashable as H
-import Data.ByteString as BS
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 import Data.List as L
 import System.IO.Unsafe
@@ -22,13 +23,16 @@ byteStringToStr str = C.unpack str
 emptyByteString :: ByteString
 emptyByteString = BS.empty
 
--- Split string by comma
+-- Split string by a given char
 splitString :: String -> Char -> [String]
-splitString [] _ = []
-splitString (c:cs) chr
-  | c == chr = "" : rest
-  | otherwise = (c : Prelude.head rest) : Prelude.tail rest
-  where rest = splitString cs chr
+splitString str chr =
+  let res = splitStringHelper str chr
+  in if res == [""] then [] else res
+  where splitStringHelper [] _ = [""]
+        splitStringHelper (c:cs) chr
+          | c == chr = "" : rest
+          | otherwise = (c : head rest) : tail rest
+          where rest = splitStringHelper cs chr
 
 -- Join a list of strings by some string
 joinString :: String -> [String] -> String
