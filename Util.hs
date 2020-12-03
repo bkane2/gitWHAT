@@ -41,6 +41,13 @@ joinString :: String -> [String] -> String
 joinString _ [] = ""
 joinString str lst = (L.intercalate str lst)
 
+-- Remove duplicates from a list
+removeDuplicates :: Eq a => [a] -> [a]
+removeDuplicates [] = []
+removeDuplicates (x:xs)
+  | elem x xs = removeDuplicates xs
+  | otherwise = x : (removeDuplicates xs)
+
 -- File IO (wrapper function for loading file)
 -- loadFile :: String -> IO ByteString
 -- loadFile fname = BS.readFile fname
