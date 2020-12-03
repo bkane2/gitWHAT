@@ -68,26 +68,31 @@ testForValidityOfCommand command params repoStates
    -- clone <newRepoName> <oldRepoName>
    -- TBC
    -- add <repoName> <filePath1> [filePath2] [filePath3] ...
-   | (command == "add") && ((length params) /= 2) = (False, "add must be called as 'add <repoName> <filePath1> [filePath2] [filePath3] ...'")
-   | (command == "add") && (not (repoExists (params !! 0) repoStates)) = (False, "repo "++(params !! 0)++" does not exist.")
+   | (command == "add") && ((length params) < 2) = (False, "add must be called as 'add <repoName> <filePath1> [filePath2] [filePath3] ...'")
+   | (command == "add") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
    | (command == "add") && (not (all U.fileExists (tail params))) = (False, "File does not exist. Make sure paths are correct.")
    -- remove <repoName> <filePath1> [filePath2] [filePath3] ...
-   | (command == "remove") && ((length params) /= 2) = (False, "remove must be called as 'remove <repoName> <filePath1> [filePath2] [filePath3] ...'")
-   | (command == "remove") && (not (repoExists (params !! 0) repoStates)) = (False, "repo "++(params !! 0)++" does not exist.")
+   | (command == "remove") && ((length params) < 2) = (False, "remove must be called as 'remove <repoName> <filePath1> [filePath2] [filePath3] ...'")
+   | (command == "remove") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
    -- status <repoName>
-   | (command == "status") && (((length params) < 1) || ((length params) > 2)) = (False, "status must be called as 'remove <repoName> [-v]'")
-   | (command == "status") && ((length params) == 2) && ((params !! 1) /= "-v") = (False, "status must be called as 'remove <repoName> [-v]'")
-   | (command == "status") && (not (repoExists (params !! 0) repoStates)) = (False, "repo "++(params !! 0)++" does not exist.")
-   -- diff <repoName> <revID1> <revID2>
+   | (command == "status") && (((length params) < 1) || ((length params) > 2)) = (False, "status must be called as 'status <repoName> [-v]'")
+   | (command == "status") && ((length params) == 2) && ((params !! 1) /= "-v") = (False, "status must be called as 'status <repoName> [-v]'")
+   | (command == "status") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
+   -- heads <repoName> [-a]
+   -- TBC
+   -- diff <repoName> <revID1> <revID2> [filePath]
    -- TBC
    -- cat <repoName> <revID> <filePath>
    -- TBC
    -- checkout <repoName> <revID>
    -- TBC
    -- commit <repoName> <revID>
-   -- TBC
+   | (command == "commit") && ((length params) /= 2) = (False, "commit must be called as 'commit <repoName> <revID>'")
+   | (command == "commit") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
    -- log <repoName> [-v]
-   -- TBC
+   | (command == "log") && (((length params) < 1) || ((length params) > 2)) = (False, "log must be called as 'log <repoName> [-v]'")
+   | (command == "log") && ((length params) == 2) && ((params !! 1) /= "-v") = (False, "log must be called as 'log <repoName> [-v]'")
+   | (command == "log") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
    -- merge <repoName> <revID1> <revID2>
    -- TBC
    -- pull <repoName1> <repoName2>
@@ -134,8 +139,8 @@ executeCommand "status" params repoStates = ((status (getRepoState (params !! 0)
 executeCommand "diff" params repoStates = ("TBC", repoStates)
 executeCommand "cat" params repoStates = ("TBC", repoStates)
 executeCommand "checkout" params repoStates = ("TBC", repoStates)
-executeCommand "commit" params repoStates = ("TBC", repoStates)
-executeCommand "log" params repoStates = ("TBC", repoStates)
+executeCommand "commit" params repoStates = ("Commit successful.", (applyToRepoState (commit (params !! 1)) (params !! 0) repoStates))
+executeCommand "log" params repoStates = ((log_ (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "merge" params repoStates = ("TBC", repoStates)
 executeCommand "pull" params repoStates = ("TBC", repoStates)
 executeCommand "push" params repoStates = ("TBC", repoStates)
@@ -148,9 +153,9 @@ executeCommand _ _ repoStates = ("I did not understand that command.", repoState
 -- Initializes an empty repository
 initRepo :: RepositoryID -> [RepositoryState] -> [RepositoryState]
 initRepo name repoStates =
-   let newRepo = RP.initRepository name
-       (_, revs, _, _) = newRepo
-   in (newRepo, (head revs), []) : repoStates
+   let repoNew = RP.initRepository name
+       (_, revs, _, _) = repoNew
+   in (repoNew, (head revs), []) : repoStates
 
 -- Prints the IDs of all repositories in repoStates
 printRepos :: [RepositoryState] -> String
@@ -176,32 +181,59 @@ printRepos (x:xs) =
 -- Adds a list of files to the tracking list, given a particular repository state
 add :: [FileName] -> RepositoryState -> RepositoryState
 add fnames repoState =
-   let (repo, head, trackingList) = repoState
-   in (repo, head, foldl TL.track trackingList fnames)
+   let (repo, hd, trackingList) = repoState
+   in (repo, hd, foldl TL.track trackingList fnames)
 
 -- Removes a list of files from the tracking list, given a particular repository state
 remove :: [FileName] -> RepositoryState -> RepositoryState
 remove fnames repoState =
-   let (repo, head, trackingList) = repoState
-   in (repo, head, foldl TL.untrack trackingList fnames)
+   let (repo, hd, trackingList) = repoState
+   in (repo, hd, foldl TL.untrack trackingList fnames)
 
 -- Gets status of tracking list given a repository state (and possibly a -v flag for verbose)
 status :: RepositoryState -> [String] -> String
 status repoState flags = 
-   let (repo, head, trackingList) = repoState
+   let (repo, hd, trackingList) = repoState
    in if flags == []
       then V.printTrackingList trackingList
       else V.printTrackingListVerbose trackingList
 
--- heads :: IO ()
+-- heads :: RepositoryState -> [String] -> String
+-- heads repoState flags =
+-- TBC
 
--- diff :: Revision -> Revision -> String
+-- diff :: RepositoryState -> RevisionID -> RevisionID -> String
 -- diff revis1 revis2 = 
 --  if revis1 RevisionID == revis2 RevisionID then "difference not detected"
 --  else "difference detected"
--- -- cat :: FileID -> Revision -> 
+-- TBC
 
--- -- checkout :: Revision -> 
+-- cat :: RepositoryState -> RevisionID -> FileName -> String
+-- TBC
 
--- commit :: Repository -> [FileID] -> Repository
--- commit
+-- checkout :: 
+-- TBC
+
+commit :: RevisionID -> RepositoryState -> RepositoryState
+commit revId repoState =
+   let (repo, hd, trackingList) = repoState
+       repoNew = RV.revise repo revId hd trackingList
+       (_, revs, _, _) = repoNew
+   in (repoNew, (head revs), [])
+      
+
+log_ :: RepositoryState -> [String] -> String
+log_ repoState flags =
+   let (repo, hd, trackingList) = repoState
+   in if flags == []
+      then V.printRepository repo
+      else V.printRepositoryVerbose repo
+
+-- merge :: RevisionID -> RevisionID -> RepositoryState -> RepositoryState
+-- TBC
+
+-- pull :: RepositoryState -> RepositoryState -> RepositoryState
+-- TBC
+
+-- push :: RepositoryState -> RepositoryState -> RepositoryState
+-- TBC
