@@ -2,7 +2,6 @@ module TrackingList where
 
 import Model as M
 import Util as U
-import Data.List (delete)
 
 -- Initiates an empty tracking list
 emptyTrackingList :: [File]
