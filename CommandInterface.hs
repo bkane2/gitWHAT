@@ -65,6 +65,8 @@ testForValidityOfCommand command params repoStates
    -- init <repoName>
    | (command == "init") && ((length params) /= 1) = (False, "init must be called as 'init <repoName>'.")
    | (command == "init") && (repoExists (params !! 0) repoStates) = (False, (params !! 0)++" already exists.")
+   -- clone <newRepoName> <oldRepoName>
+   -- TBC
    -- add <repoName> <filePath1> [filePath2] [filePath3] ...
    | (command == "add") && ((length params) /= 2) = (False, "add must be called as 'add <repoName> <filePath1> [filePath2] [filePath3] ...'")
    | (command == "add") && (not (repoExists (params !! 0) repoStates)) = (False, "repo "++(params !! 0)++" does not exist.")
@@ -76,6 +78,22 @@ testForValidityOfCommand command params repoStates
    | (command == "status") && (((length params) < 1) || ((length params) > 2)) = (False, "status must be called as 'remove <repoName> [-v]'")
    | (command == "status") && ((length params) == 2) && ((params !! 1) /= "-v") = (False, "status must be called as 'remove <repoName> [-v]'")
    | (command == "status") && (not (repoExists (params !! 0) repoStates)) = (False, "repo "++(params !! 0)++" does not exist.")
+   -- diff <repoName> <revID1> <revID2>
+   -- TBC
+   -- cat <repoName> <revID> <filePath>
+   -- TBC
+   -- checkout <repoName> <revID>
+   -- TBC
+   -- commit <repoName> <revID>
+   -- TBC
+   -- log <repoName> [-v]
+   -- TBC
+   -- merge <repoName> <revID1> <revID2>
+   -- TBC
+   -- pull <repoName1> <repoName2>
+   -- TBC
+   -- push <repoName1> <repoName2>
+   -- TBC
    | otherwise = (True, "")
 
 -- --based on if valid command, if so then will take in next parameters
