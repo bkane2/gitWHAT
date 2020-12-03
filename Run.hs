@@ -10,23 +10,22 @@ read_ = putStr "gitWHAT?> "
     >> getLine
 
 -- Evaluates command and passes along repository list
-eval_ :: String -> [Repository] -> (String, [Repository])
-eval_ "init" repos = ("Initializing new repository...", repos ++ [initRepo])
-eval_ _ [] = ("First command must be init.", [])
-eval_ input repos = (input, repos)
--- eval_ _ repos = ("I did not understand that command.", repos)
+eval_ :: String -> [RepositoryState] -> (String, [RepositoryState])
+eval_ input repoStates =
+    let (command, params) = CI.parseInput input
+    in CI.evalCommand command params repoStates
 
 -- Prints informative message
 print_ :: String -> IO ()
 print_ = putStrLn
 
 -- Driver function of the REPL loop
-run :: [Repository] -> IO ()
-run repos = do
+run :: [RepositoryState] -> IO ()
+run repoStates = do
     input <- read_
     
     unless (input == ":quit") $
-        let evalInput = eval_ input repos in
+        let evalInput = eval_ input repoStates in
         print_ (fst evalInput) >> run (snd evalInput)
 
 -- Main function
