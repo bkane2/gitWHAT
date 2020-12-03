@@ -19,9 +19,9 @@ revise :: Repository -> RevisionID -> Revision -> [File] -> Repository
 revise repo revId1 rev files =
   let (repoId, revs, man, logs) = repo
       (revId, manId) = rev
-      fnames = [ a | (a,b) <- files ]
+      fnames = map fst files
       -- Make sure all files in 'files' are logged, creating new FileLogs if not
-      loggedFiles = map (\l -> let (a, _) = l in a) logs
+      loggedFiles = map fst logs
       logs1 = map (\fname -> FL.fileLogLookup fname logs) fnames
       -- Get parent manifest version and contents
       manVersion = (FL.getVersion man manId)
@@ -31,16 +31,9 @@ revise repo revId1 rev files =
         let manMapExisting = nodeIDMapFromManifest manContents fnames
         in nodeIDListToMap [ (fname, 0) | fname <- fnames, notElem fname loggedFiles ] manMapExisting
       -- For each log in the revision set, create a new version and add to log given parent ID, recording new NodeID
-      logsAndNodeIdsNew = map (\log ->
-        let (fname, _) = log
-            parentId = nodeIDFromMap fname manMap
-            contents = M.getFileContentsFromList fname files
-            versionNew = FV.createVersion contents (parentId, 0)
-            nodeIdNew = FV.getVersionNodeID versionNew
-            logNew = FL.addVersion log versionNew parentId Nothing
-        in (logNew, (fname, nodeIdNew))) logs1
-      logsNew = [ a | (a,b) <- logsAndNodeIdsNew ]
-      manMapNew = [ b | (a,b) <- logsAndNodeIdsNew ]
+      logsAndNodeIdsNew = map (updateLog manMap files) logs1
+      logsNew = map fst logsAndNodeIdsNew
+      manMapNew = map snd logsAndNodeIdsNew
       -- Create new manifest version with manId as parent NodeID and new nodeIds as
       manVersionNew = FV.createVersion (nodeIDListToContents manMapNew) (manId, 0)
       manIdNew = FV.getVersionNodeID manVersionNew
@@ -48,6 +41,18 @@ revise repo revId1 rev files =
   -- Return updated repository
   in (repoId, ((revId1, manIdNew):revs), manNew, logsNew)
 
+
+-- Given a mapping of FileNames to NodeIDs (of previous revision), list of Files to be updated, and a FileLog,
+-- update the FileLog and return it in a tuple with the new (FileName, NodeID) pair.
+updateLog :: Map FileName NodeID -> [File] -> FileLog -> (FileLog, (FileName, NodeID))
+updateLog manMap files log =
+  let (fname, _) = log
+      parentId = nodeIDFromMap fname manMap
+      contents = M.getFileContentsFromList fname files
+      versionNew = FV.createVersion contents (parentId, 0)
+      nodeIdNew = FV.getVersionNodeID versionNew
+      logNew = FL.addVersion log versionNew parentId Nothing
+  in (logNew, (fname, nodeIdNew))
 
 -- Given contents of manifest file, parse into a hash map of FileName to NodeID
 -- manifest file contents are of the form "fname1 id1,fname2 id2,..."
