@@ -6,6 +6,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 import Data.List as L
 import System.IO.Unsafe
+import System.Directory
 
 -- Create NodeID by hashing on ByteString
 hashNodeID :: ByteString -> Int
@@ -44,6 +45,10 @@ joinString str lst = (L.intercalate str lst)
 -- loadFile fname = BS.readFile fname
 loadFile :: String -> ByteString
 loadFile fname = unsafePerformIO (BS.readFile fname)
+
+-- Check if file exists
+fileExists :: String -> Bool
+fileExists fname = unsafePerformIO (doesFileExist fname)
 
 -- Creates a separator string
 createSep :: String
