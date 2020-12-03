@@ -55,9 +55,6 @@ getTree n (Branch a b c)
     where
         result = getTree n b
 
-commit :: a -> Tree a -> Tree a
-commit n t = Branch n t Empty
-
 -- Adds a given child, to the specified parent in the given tree
 addOneParentKey :: (Eq a) => a -> Int -> (a -> Int) -> Tree a -> Maybe (Tree a)
 addOneParentKey c p f t = 
