@@ -55,9 +55,19 @@ applyToRepoState f repo (x:xs) =
 -- NOTE: if command is not supported at all, this is caught elsewhere.
 testForValidityOfCommand :: String -> [String] -> [RepositoryState] -> (Bool, String)
 testForValidityOfCommand command params repoStates
-   -- init must have 1 param, and it must be a repoID that doesn't exist yet
-   | (command == "init") && ((length params) /= 1) = (False, "init must be called as 'init <repoName>'.")
+   -- init [repoName]
+   | (command == "init") && ((length params) /= 1) = (False, "init must be called as 'init [repoName]'.")
    | (command == "init") && (repoExists (params !! 0) repoStates) = (False, (params !! 0)++" already exists.")
+   -- add [repoName] [filePath1] <filePath2> <filePath3> ...
+   | (command == "add") && ((length params) /= 2) = (False, "add must be called as 'add [repoName] [filePath1] <filePath2> <filePath3> ...'")
+   | (command == "add") && (not (repoExists (params !! 0) repoStates)) = (False, "repo "++(params !! 0)++" does not exist.")
+   | (command == "add") && (not (all U.fileExists (tail params))) = (False, "File does not exist. Make sure paths are correct.")
+   -- remove [repoName] [filePath1] <filePath2> <filePath3> ...
+   | (command == "remove") && ((length params) /= 2) = (False, "remove must be called as 'remove [repoName] [filePath1] <filePath2> <filePath3> ...'")
+   | (command == "remove") && (not (repoExists (params !! 0) repoStates)) = (False, "repo "++(params !! 0)++" does not exist.")
+   -- status [repoName]
+   | (command == "status") && ((length params) /= 1) = (False, "status must be called as 'remove [repoName] [filePath]'")
+   | (command == "status") && (not (repoExists (params !! 0) repoStates)) = (False, "repo "++(params !! 0)++" does not exist.")
    | otherwise = (True, "")
 
 -- --based on if valid command, if so then will take in next parameters
@@ -89,11 +99,11 @@ evalCommand command params repoStates =
 -- message and updated repository states
 executeCommand :: String -> [String] -> [RepositoryState] -> (String, [RepositoryState])
 executeCommand "init" params repoStates = ("Initializing new repository...", initRepo (params !! 0) repoStates)
-executeCommand _ _ [] = ("First command must be 'init <repoName>'.", [])
+executeCommand _ _ [] = ("First command must be 'init [repoName]'.", [])
 executeCommand "repos" _ repoStates = (printRepos repoStates, repoStates)
 executeCommand "clone" params repoStates = ("TBC", repoStates)
-executeCommand "add" params repoStates = ("TBC", repoStates)
-executeCommand "remove" params repoStates = ("TBC", repoStates)
+executeCommand "add" params repoStates = ("Tracking list updated.", (applyToRepoState (add (tail params)) (params !! 0) repoStates))
+executeCommand "remove" params repoStates = ("Tracking list updated.", (applyToRepoState (remove (tail params)) (params !! 0) repoStates))
 executeCommand "status" params repoStates = ("TBC", repoStates)
 executeCommand "diff" params repoStates = ("TBC", repoStates)
 executeCommand "cat" params repoStates = ("TBC", repoStates)
@@ -140,13 +150,17 @@ printRepos (x:xs) =
 --             (new_id, _, _, _) = last t
 
 -- Adds a list of files (second argument) to the given tracking list (first argument)
-add :: [File] -> [FileName] -> [File]
-add = foldl TL.track 
+add :: [FileName] -> RepositoryState -> RepositoryState
+add fnames repoState =
+   let (repo, head, trackingList) = repoState
+   in (repo, head, foldl TL.track trackingList fnames)
 
 -- Removes a list of files (second argument) from the given tracking list (first
 -- argument)
-remove :: [File] -> [FileName] -> [File]
-remove = foldl TL.untrack
+remove :: [FileName] -> RepositoryState -> RepositoryState
+remove fnames repoState =
+   let (repo, head, trackingList) = repoState
+   in (repo, head, foldl TL.untrack trackingList fnames)
 
 -- Forwards 'status' command to view hiding module
 -- status :: Repository -> [IO ()]
