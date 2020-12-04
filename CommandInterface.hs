@@ -25,6 +25,12 @@ repoExists repo repoStates =
    let repoIds = [ repoId | ((repoId, _, _, _), _, _) <- repoStates ]
    in elem repo repoIds
 
+-- Ensures that target repository has given revision
+revisionExistsInRepo :: String -> RepositoryState -> Bool
+revisionExistsInRepo revId repoState = 
+   let (repo, _, _) = repoState
+   in RP.hasRevision revId repo
+
 -- Applies a command to a particular RepositoryState, returning a new list of RepositoryState
 -- with the modified version.
 applyToRepoState :: (RepositoryState -> RepositoryState) -> String -> [RepositoryState] -> [RepositoryState]
@@ -70,7 +76,10 @@ testForValidityOfCommand command params repoStates
    -- cat <repoName> <revID> <filePath>
    -- TBC
    -- checkout <repoName> <revID>
-   -- TBC
+   | (command == "checkout") && ((length params) /= 2) = (False, "checkout must be called as 'checkout <repoName> <revID>'")
+   | (command == "checkout") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
+   | (command == "checkout") && (not (revisionExistsInRepo (params !! 1) (getRepoState (params !! 0) repoStates))) =
+      (False, "Revision "++(params !! 1)++" does not exist in "++(params !! 0)++".")
    -- commit <repoName> <revID>
    | (command == "commit") && ((length params) /= 2) = (False, "commit must be called as 'commit <repoName> <revID>'")
    | (command == "commit") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
