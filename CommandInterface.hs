@@ -62,7 +62,9 @@ testForValidityOfCommand command params repoStates
    | (command == "status") && ((length params) == 2) && ((params !! 1) /= "-v") = (False, "status must be called as 'status <repoName> [-v]'")
    | (command == "status") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
    -- heads <repoName> [-a]
-   -- TBC
+   | (command == "heads") && (((length params) < 1) || ((length params) > 2)) = (False, "heads must be called as 'heads <repoName> [-a]'")
+   | (command == "heads") && ((length params) == 2) && ((params !! 1) /= "-a") = (False, "heads must be called as 'heads <repoName> [-a]'")
+   | (command == "heads") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
    -- diff <repoName> <revID1> <revID2> [filePath]
    -- TBC
    -- cat <repoName> <revID> <filePath>
@@ -102,6 +104,7 @@ executeCommand "clone" params repoStates = ("TBC", repoStates)
 executeCommand "add" params repoStates = ("Tracking list updated.", (applyToRepoState (add (tail params)) (params !! 0) repoStates))
 executeCommand "remove" params repoStates = ("Tracking list updated.", (applyToRepoState (remove (tail params)) (params !! 0) repoStates))
 executeCommand "status" params repoStates = ((status (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
+executeCommand "heads" params repoStates = ((heads (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "diff" params repoStates = ("TBC", repoStates)
 executeCommand "cat" params repoStates = ("TBC", repoStates)
 executeCommand "checkout" params repoStates = ("TBC", repoStates)
@@ -166,8 +169,28 @@ status repoState flags =
       then V.printTrackingList trackingList
       else V.printTrackingListVerbose trackingList
 
--- heads :: RepositoryState -> [String] -> String
--- heads repoState flags =
+heads :: RepositoryState -> [String] -> String
+heads repoState flags =
+   let (repo, hd, _) = repoState
+   in if null flags
+      then concatMap V.printRevision (getHeads repo)
+      else V.printRevision hd
+
+getHeads :: Repository -> [Revision]
+getHeads (_, r, m, _) = concatMap (search r []) r
+   where
+      search [] heads n = heads ++ [n]
+      search (h:t) heads n = 
+         if compNodes n h m then heads
+         else search t heads n
+ 
+compNodes :: Revision -> Revision -> FileLog -> Bool
+compNodes (_, x) (_, y) (_, t) = 
+      case getNodeParents y FV.getVersionNodeID t of
+      [] -> False
+      [(p, _)] -> x == p
+      [(p1, _), (p2, _)] -> x == p1 || x == p2
+
 -- TBC
 
 -- diff :: RepositoryState -> RevisionID -> RevisionID -> String
