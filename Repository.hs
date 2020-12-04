@@ -10,6 +10,12 @@ import Tree as T
 -- Create an empty repository
 initRepository :: RepositoryID -> Repository
 initRepository id = (id, [(RV.initRevision)], (FL.createFileLog ".manifest"), [])
+
+-- Check if a repository has a given RevisionID
+hasRevision :: RevisionID -> Repository -> Bool
+hasRevision revId repo =
+  let (_, revisions, _, _) = repo
+  in elem revId (map fst revisions)
   
 
 -- TODO:
