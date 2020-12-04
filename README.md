@@ -11,13 +11,13 @@ ghc -outputdir obj Run.hs
 ./Run
 
 ## Supported commands
-* init <repoName>
-* clone <newRepoName> <oldRepoName>
-* add <repoName> <filePath1> \[filePath2\] \[filePath3\] ...
-* remove <repoName> <filePath1> \[filePath2\] \[filePath3\] ...
-* status <repoName>
-* commit <repoName> <revID>
-* log <repoName> \[-v\]
+* init \<repoName>
+* clone \<newRepoName> \<oldRepoName>
+* add \<repoName> \<filePath1> \[filePath2\] \[filePath3\] ...
+* remove \<repoName> \<filePath1> \[filePath2\] \[filePath3\] ...
+* status \<repoName>
+* commit \<repoName> \<revID>
+* log \<repoName> \[-v\]
 
 ## Acceptance test 1
 init Repo1
