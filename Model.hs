@@ -9,7 +9,7 @@ import qualified Data.ByteString.Char8 as C
 
 -- Repository state consists of the repository, the active HEAD (a Revision) of the working directory, and a tracking list
 type RepositoryState = (Repository, Revision, [File])
--- Repository consists of a manifest (FileLog) and a list of FileLog for each file being versioned
+-- Repository consists of a unique repository ID, list of all revisions, manifest (FileLog), and a list of FileLog for each file being versioned
 type RepositoryID = String
 type Repository = (RepositoryID, [Revision], FileLog, [FileLog])
 -- Revision is a unique RevisionID and a NodeID pointing to a particular version of the manifest FileLog
