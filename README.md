@@ -12,7 +12,6 @@ ghc -outputdir obj Run.hs
 
 ## Supported commands
 * init \<repoName>
-* clone \<newRepoName> \<oldRepoName>
 * add \<repoName> \<filePath1> \[filePath2\] \[filePath3\] ...
 * remove \<repoName> \<filePath1> \[filePath2\] \[filePath3\] ...
 * status \<repoName>
