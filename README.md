@@ -5,7 +5,34 @@ DVCS for CSC 253/453
 https://github.com/bkane2/gitWHAT
 
 # How to compile
-ghc -outputdir obj TestModel.hs
+ghc -outputdir obj Run.hs
 
-# How to test
-The code isn't currently in a state where it can be tested, though most of the pieces are there. With another week, a testable program could be put together.
+# How to run
+./Run
+
+# Supported commands
+* init <repoName>
+* clone <newRepoName> <oldRepoName>
+* add <repoName> <filePath1> \[filePath2\] \[filePath3\] ...
+* remove <repoName> <filePath1> \[filePath2\] \[filePath3\] ...
+* status <repoName>
+* commit <repoName> <revID>
+* log <repoName> \[-v\]
+
+# Acceptance test 1
+init Repo1
+repos
+\**create test/a.txt and test/b.txt with some contents*\*
+add Repo1 test/a.txt test/b.txt
+status Repo1
+remove Repo1 test/a.txt
+status Repo1
+add Repo1 test/a.txt
+commit Repo1 Rev1
+status Repo1
+log Repo1
+\**modify test/a.txt and create test/c.txt with some contents*\*
+add Repo1 test/a.txt test/c.txt
+status Repo1
+commit Repo1 Rev2
+log Repo1 -v
