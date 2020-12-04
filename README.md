@@ -1,16 +1,16 @@
 # gitWHAT
 DVCS for CSC 253/453
 
-# GitHub page
+## GitHub page
 https://github.com/bkane2/gitWHAT
 
-# How to compile
+## How to compile
 ghc -outputdir obj Run.hs
 
-# How to run
+## How to run
 ./Run
 
-# Supported commands
+## Supported commands
 * init <repoName>
 * clone <newRepoName> <oldRepoName>
 * add <repoName> <filePath1> \[filePath2\] \[filePath3\] ...
@@ -19,7 +19,7 @@ ghc -outputdir obj Run.hs
 * commit <repoName> <revID>
 * log <repoName> \[-v\]
 
-# Acceptance test 1
+## Acceptance test 1
 init Repo1
 repos
 \**create test/a.txt and test/b.txt with some contents*\*
