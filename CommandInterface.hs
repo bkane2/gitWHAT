@@ -104,7 +104,7 @@ evalCommand command params repoStates =
 -- Executes a command once validity of command has been verified. Returns an informative
 -- message and updated repository states
 executeCommand :: String -> [String] -> [RepositoryState] -> (String, [RepositoryState])
-executeCommand "init" params repoStates = ("Initializing new repository...", initRepo (params !! 0) repoStates)
+executeCommand "init" params repoStates = init_ (params !! 0) repoStates
 executeCommand _ _ [] = ("First command must be 'init <repoName>'.", [])
 executeCommand "repos" _ repoStates = (printRepos repoStates, repoStates)
 executeCommand "clone" params repoStates = ("TBC", repoStates)
@@ -113,7 +113,7 @@ executeCommand "remove" params repoStates = ("Tracking list updated.", (applyToR
 executeCommand "status" params repoStates = ((status (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "diff" params repoStates = ("TBC", repoStates)
 executeCommand "cat" params repoStates = ("TBC", repoStates)
-executeCommand "checkout" params repoStates = ("TBC", repoStates)
+executeCommand "checkout" params repoStates = (checkout repoStates (params !! 0) (params !! 1))
 executeCommand "commit" params repoStates = ("Commit successful.", (applyToRepoState (commit (params !! 1)) (params !! 0) repoStates))
 executeCommand "log" params repoStates = ((log_ (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "merge" params repoStates = ("TBC", repoStates)
@@ -126,6 +126,12 @@ executeCommand _ _ repoStates = ("I did not understand that command.", repoState
 -- TODO: if we want to be really modular, these can be moved into a separate
 --       file/module, but it's not hugely important.
 ------------------------------------------------------------------------------------
+
+-- Creates a repository
+init_ :: RepositoryID -> [RepositoryState] -> (String, [RepositoryState])
+init_ name repoStates =
+   let message = seq (U.ensureDirectoryExists name) "Initializing new repository..."
+   in (message, initRepo name repoStates)
 
 -- Initializes an empty repository
 initRepo :: RepositoryID -> [RepositoryState] -> [RepositoryState]
@@ -188,8 +194,27 @@ status repoState flags =
 -- cat :: RepositoryState -> RevisionID -> FileName -> String
 -- TBC
 
--- checkout :: 
--- TBC
+
+-- Two steps: 1. write files and generate string, 2. apply to repo states and update active head
+checkout :: [RepositoryState] -> String -> RevisionID -> (String, [RepositoryState])
+checkout repoStates repoId revId = 
+   let repoState = getRepoState repoId repoStates
+       message = ("Checked out revision "++(updateWorkingDirectory repoState repoId revId)++revId)
+   in (message, (applyToRepoState (updateActiveHead revId) repoId repoStates))
+
+-- Step (1) of checkout; write files to corresponding directory.
+-- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
+updateWorkingDirectory :: RepositoryState -> String -> RevisionID -> String
+updateWorkingDirectory repoState repoId revId = 
+   let (repo, _, _) = repoState
+   in (seq (U.removeDirectoryContents repoId) (RV.dumpRevisionFiles repo revId))
+
+-- Step (2) of checkout; return a new RepositoryState with an updated head
+updateActiveHead :: RevisionID -> RepositoryState -> RepositoryState
+updateActiveHead revId repoState =
+   let (repo, hd, _) = repoState
+   in (repo, (RP.getRevision revId repo), [])   
+   
 
 commit :: RevisionID -> RepositoryState -> RepositoryState
 commit revId repoState =
