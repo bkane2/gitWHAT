@@ -150,41 +150,58 @@ initRepo name repoStates =
        (_, revs, _, _) = repoNew
    in (repoNew, (head revs), []) : repoStates
 
+
 -- Prints the IDs of all repositories in repoStates
 printRepos :: [RepositoryState] -> String
 printRepos [] = ""
 printRepos (x:xs) =
    let ((repoID, _, _, _), _, _) = x
    in "* " ++ repoID ++ "\n" ++ (printRepos xs)
+
+
+-- 
+clone :: RepositoryID -> RepositoryID -> [RepositoryState] -> (String, [RepositoryState])
+clone repoIdNew repoIdOld repoStates =
+   let (repoStateNew, repoStatesNew) = cloneRepo repoIdNew repoIdOld repoStates
+       (_, (hdIdNew, _), _) = repoStateNew
+       message = seq (U.ensureDirectoryExists repoIdNew)
+         "Cloning "++repoIdOld++" into "++repoIdNew++(updateWorkingDirectory repoStateNew repoIdNew hdIdNew)
+   in (message, repoStatesNew)
+
+-- 
+cloneRepo :: RepositoryID -> RepositoryID -> [RepositoryState] -> (RepositoryState, [RepositoryState])
+cloneRepo repoIdNew repoIdOld repoStates =
+   let repoStateOld = getRepoState repoIdOld repoStates
+       ((_, revisionsOld, manifestOld, logsOld), hdOld, _) = repoStateOld
+   in ((repoIdNew, revisionsOld, manifestOld, logsOld), hdOld, []) : repoStates
  
--- Clones a repository given it's repository Id and the list of repositories it
--- is stored in, returns a new list of repositories with the clone
--- TODO: update so RepositoryState is used rather than Repository
+-- -- Clones a repository given it's repository Id and the list of repositories it
+-- -- is stored in, returns a new list of repositories with the clone
+-- -- TODO: update so RepositoryState is used rather than Repository
 
---note to self while working : it's going to have to make a new repo (empty)
---then add a NEW COPY ITS OWN of the filelog, then get the head of the revision
---from the actual repostate in the new clone
-clone :: [RepositoryState] -> RepositoryID -> Maybe [RepositoryState]
-clone [] _ = Nothing
-clone repoStates id = newRepo repoStates rev [] id where
-   newRepo repoStates rev tracks id = case repoStates of
-      [] -> Nothing
-      Just (newRep, copyrevs ) where
-         newRep = initRepo ("cloned" ++ id, repoStates) --making new empty repo.. ask ben about id part
-         copyrevhead = 
-
-
+-- --note to self while working : it's going to have to make a new repo (empty)
+-- --then add a NEW COPY ITS OWN of the filelog, then get the head of the revision
+-- --from the actual repostate in the new clone
+-- clone :: [RepositoryState] -> RepositoryID -> Maybe [RepositoryState]
+-- clone [] _ = Nothing
+-- clone repoStates id = newRepo repoStates rev [] id where
+--    newRepo repoStates rev tracks id = case repoStates of
+--       [] -> Nothing
+--       Just (newRep, copyrevs ) where
+--          newRep = initRepo ("cloned" ++ id, repoStates) --making new empty repo.. ask ben about id part
+--          copyrevhead = 
 
 
+-- clone repoStates id = search repoStates [] id where
+--    search repoStates visited id = case repoStates of 
+--       [] -> Nothing
+--       (repo_id, revs, flog, flog_list) : t -> if repo_id == id then  
+--           Just (visited ++ [(repo_id, revs, flog, flog_list)] ++ t ++ [(new_id ++ "-1", revs, flog, flog_list)]) else
+--           search t (visited ++ [(repo_id, revs, flog, flog_list)]) id 
+--           where
+--             (new_id, _, _, _) = last t
 
-clone repoStates id = search repoStates [] id where
-   search repoStates visited id = case repoStates of 
-      [] -> Nothing
-      (repo_id, revs, flog, flog_list) : t -> if repo_id == id then  
-          Just (visited ++ [(repo_id, revs, flog, flog_list)] ++ t ++ [(new_id ++ "-1", revs, flog, flog_list)]) else
-          search t (visited ++ [(repo_id, revs, flog, flog_list)]) id 
-          where
-            (new_id, _, _, _) = last t
+
 
 -- Adds files to tracking list given a list of file paths
 add :: [RepositoryState] -> String -> [String] -> (String, [RepositoryState])
