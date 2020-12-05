@@ -12,11 +12,13 @@ ghc -outputdir obj Run.hs
 
 ## Supported commands
 * init \<repoName>
+* clone \<newRepoName> \<oldRepoName>
 * repos
 * add \<repoName> \<filePath1> \[filePath2\] \[filePath3\] ...
 * remove \<repoName> \<filePath1> \[filePath2\] \[filePath3\] ...
 * status \<repoName> \[-v\] (The -v flag prints a verbose status with tracked file contents)
 * heads \<repoName> \[-a\] (The -a flag shows only the active head, i.e. the one pointing to the working directory)
+* cat \<repoName> \<revID> \<filePath>
 * checkout \<repoName> \<revID>
 * commit \<repoName> \<revID>
 * log \<repoName> \[-v\] (The -v flag prints a verbose log showing individual FileLogs (from each head Revision))
@@ -52,6 +54,7 @@ Note that all filePaths are assumed to be relative to the repoName (see the acce
 * commit test Rev2
 * heads test
 * heads test -a
+* cat test Rev1 a.txt
 * checkout test Rev1
 * heads test
 * heads test -a
@@ -61,6 +64,17 @@ Note that all filePaths are assumed to be relative to the repoName (see the acce
 * log test -v
 * heads test
 * heads test -a
-* checkout Rev1
-* checkout Rev2
-* checkout Rev3
+* cat test Rev1 a.txt
+* cat test Rev2 a.txt
+* cat test Rev2 b.txt
+* checkout test Rev1
+* checkout test Rev2
+* checkout test Rev3
+* clone test2 test
+* log test2 -v
+* heads test2
+* \**modify test2/a.txt and create test2/d.txt with some contents*\*
+* add test2 a.txt d.txt
+* commit test2 Rev4
+* log test2 -v
+* checkout test2 Rev1
