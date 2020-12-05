@@ -117,7 +117,7 @@ executeCommand :: String -> [String] -> [RepositoryState] -> (String, [Repositor
 executeCommand "init" params repoStates = init_ (params !! 0) repoStates
 executeCommand _ _ [] = ("First command must be 'init <repoName>'.", [])
 executeCommand "repos" _ repoStates = (printRepos repoStates, repoStates)
-executeCommand "clone" params repoStates = ("TBC", repoStates)
+executeCommand "clone" params repoStates = clone (params !! 0) (params !! 1) repoStates
 executeCommand "add" params repoStates = (add repoStates (params !! 0) (tail params))
 executeCommand "remove" params repoStates = ("Tracking list updated.", (applyToRepoState (remove (tail params)) (params !! 0) repoStates))
 executeCommand "status" params repoStates = ((status (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
@@ -160,48 +160,23 @@ printRepos (x:xs) =
    in "* " ++ repoID ++ "\n" ++ (printRepos xs)
 
 
--- 
+-- Clones a repository given a new RepositoryID and an old RepositoryID to clone,
+-- creating a directory corresponding to the active head revision in the cloned repo,
+-- and returning an updated list of repository states.
 clone :: RepositoryID -> RepositoryID -> [RepositoryState] -> (String, [RepositoryState])
 clone repoIdNew repoIdOld repoStates =
-   let (repoStateNew, repoStatesNew) = cloneRepo repoIdNew repoIdOld repoStates
+   let repoStateNew = cloneRepo repoIdNew repoIdOld repoStates
        (_, (hdIdNew, _), _) = repoStateNew
        message = seq (U.ensureDirectoryExists repoIdNew)
          "Cloning "++repoIdOld++" into "++repoIdNew++(updateWorkingDirectory repoStateNew repoIdNew hdIdNew)
-   in (message, repoStatesNew)
+   in (message, repoStateNew : repoStates)
 
--- 
-cloneRepo :: RepositoryID -> RepositoryID -> [RepositoryState] -> (RepositoryState, [RepositoryState])
+-- Creates a new RepositoryState from an old one
+cloneRepo :: RepositoryID -> RepositoryID -> [RepositoryState] -> RepositoryState
 cloneRepo repoIdNew repoIdOld repoStates =
    let repoStateOld = getRepoState repoIdOld repoStates
        ((_, revisionsOld, manifestOld, logsOld), hdOld, _) = repoStateOld
-   in ((repoIdNew, revisionsOld, manifestOld, logsOld), hdOld, []) : repoStates
- 
--- -- Clones a repository given it's repository Id and the list of repositories it
--- -- is stored in, returns a new list of repositories with the clone
--- -- TODO: update so RepositoryState is used rather than Repository
-
--- --note to self while working : it's going to have to make a new repo (empty)
--- --then add a NEW COPY ITS OWN of the filelog, then get the head of the revision
--- --from the actual repostate in the new clone
--- clone :: [RepositoryState] -> RepositoryID -> Maybe [RepositoryState]
--- clone [] _ = Nothing
--- clone repoStates id = newRepo repoStates rev [] id where
---    newRepo repoStates rev tracks id = case repoStates of
---       [] -> Nothing
---       Just (newRep, copyrevs ) where
---          newRep = initRepo ("cloned" ++ id, repoStates) --making new empty repo.. ask ben about id part
---          copyrevhead = 
-
-
--- clone repoStates id = search repoStates [] id where
---    search repoStates visited id = case repoStates of 
---       [] -> Nothing
---       (repo_id, revs, flog, flog_list) : t -> if repo_id == id then  
---           Just (visited ++ [(repo_id, revs, flog, flog_list)] ++ t ++ [(new_id ++ "-1", revs, flog, flog_list)]) else
---           search t (visited ++ [(repo_id, revs, flog, flog_list)]) id 
---           where
---             (new_id, _, _, _) = last t
-
+   in ((repoIdNew, revisionsOld, manifestOld, logsOld), hdOld, [])
 
 
 -- Adds files to tracking list given a list of file paths
