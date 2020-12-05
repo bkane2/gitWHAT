@@ -184,6 +184,7 @@ status repoState flags =
       then V.printTrackingList trackingList
       else V.printTrackingListVerbose trackingList
 
+-- Print heads (with an -a flag to only print the active head)
 heads :: RepositoryState -> [String] -> String
 heads repoState flags =
    let (repo, hd, _) = repoState
@@ -191,6 +192,7 @@ heads repoState flags =
       then concatMap V.printRevision (getHeads repo)
       else V.printRevision hd
 
+-- Gets the heads of a Repository
 getHeads :: Repository -> [Revision]
 getHeads (_, r, m, _) = concatMap (search r []) r
    where
@@ -199,6 +201,7 @@ getHeads (_, r, m, _) = concatMap (search r []) r
          if compNodes n h m then heads
          else search t heads n
  
+--  Compares nodes between two Revisions for a FileLog
 compNodes :: Revision -> Revision -> FileLog -> Bool
 compNodes (_, x) (_, y) (_, t) = 
       case getNodeParents y FV.getVersionNodeID t of
@@ -239,6 +242,7 @@ updateActiveHead revId repoState =
    in (repo, (RP.getRevision revId repo), [])   
    
 
+-- Commits files in the tracking list to a new revision
 commit :: RevisionID -> RepositoryState -> RepositoryState
 commit revId repoState =
    let (repo, hd, trackingList) = repoState
@@ -247,12 +251,14 @@ commit revId repoState =
    in (repoNew, (head revs), [])
       
 
+-- Logs revisions in the repository
 log_ :: RepositoryState -> [String] -> String
 log_ repoState flags =
    let (repo, hd, trackingList) = repoState
    in if flags == []
       then V.printRepository repo
       else V.printRepositoryVerbose repo
+
 
 -- merge :: RevisionID -> RevisionID -> RepositoryState -> RepositoryState
 -- TBC
