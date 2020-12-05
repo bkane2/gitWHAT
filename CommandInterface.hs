@@ -61,7 +61,8 @@ testForValidityOfCommand command params repoStates
    -- add <repoName> <filePath1> [filePath2] [filePath3] ...
    | (command == "add") && ((length params) < 2) = (False, "add must be called as 'add <repoName> <filePath1> [filePath2] [filePath3] ...'")
    | (command == "add") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
-   | (command == "add") && (not (all U.fileExists (tail params))) = (False, "File does not exist. Make sure paths are correct.")
+   | (command == "add") && (not (all U.fileExists (map (\fname -> (params !! 0)++"/"++fname) (tail params)))) =
+      (False, "File does not exist. Make sure paths are correct.")
    -- remove <repoName> <filePath1> [filePath2] [filePath3] ...
    | (command == "remove") && ((length params) < 2) = (False, "remove must be called as 'remove <repoName> <filePath1> [filePath2] [filePath3] ...'")
    | (command == "remove") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
@@ -159,35 +160,50 @@ printRepos (x:xs) =
 -- Clones a repository given it's repository Id and the list of repositories it
 -- is stored in, returns a new list of repositories with the clone
 -- TODO: update so RepositoryState is used rather than Repository
--- clone :: [Repository] -> RepositoryID -> Maybe [Repository]
--- clone [] _ = Nothing
--- clone repo_list id = search repo_list [] id where
---    search repo_list visited id = case repo_list of 
---       [] -> Nothing
---       (repo_id, revs, flog, flog_list) : t -> if repo_id == id then  
---           Just (visited ++ [(repo_id, revs, flog, flog_list)] ++ t ++ [(new_id + 1, revs, flog, flog_list)]) else
---           search t (visited ++ [(repo_id, revs, flog, flog_list)]) id 
---           where
---             (new_id, _, _, _) = last t
+
+--note to self while working : it's going to have to make a new repo (empty)
+--then add a NEW COPY ITS OWN of the filelog, then get the head of the revision
+--from the actual repostate in the new clone
+clone :: [RepositoryState] -> RepositoryID -> Maybe [RepositoryState]
+clone [] _ = Nothing
+clone repoStates id = newRepo repoStates rev [] id where
+   newRepo repoStates rev tracks id = case repoStates of
+      [] -> Nothing
+      Just (newRep, copyrevs ) where
+         newRep = initRepo ("cloned" ++ id, repoStates) --making new empty repo.. ask ben about id part
+         copyrevhead = 
+
+
+
+
+
+clone repoStates id = search repoStates [] id where
+   search repoStates visited id = case repoStates of 
+      [] -> Nothing
+      (repo_id, revs, flog, flog_list) : t -> if repo_id == id then  
+          Just (visited ++ [(repo_id, revs, flog, flog_list)] ++ t ++ [(new_id ++ "-1", revs, flog, flog_list)]) else
+          search t (visited ++ [(repo_id, revs, flog, flog_list)]) id 
+          where
+            (new_id, _, _, _) = last t
 
 -- Adds files to tracking list given a list of file paths
 add :: [RepositoryState] -> String -> [String] -> (String, [RepositoryState])
 add repoStates repoId fnames =
    let repoState = getRepoState repoId repoStates
-       (txt, files) = fetchFiles fnames
+       (txt, files) = fetchFiles repoId fnames
        message = ("Tracking list updated."++txt)
    in (message, (applyToRepoState (addFiles files) repoId repoStates))
 
 -- Reads files into memory
 -- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
-fetchFiles :: [FileName] -> (String, [File])
-fetchFiles fnames = foldr fetchFile ("", []) fnames
+fetchFiles :: String -> [FileName] -> (String, [File])
+fetchFiles repoId fnames = foldr (fetchFile repoId) ("", []) fnames
 
 -- Reads a file into memory
 -- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
-fetchFile :: FileName -> (String, [File]) -> (String, [File])
-fetchFile fname (acc_s, acc_f) =
-   let file = (fname, U.loadFile fname)
+fetchFile :: String -> FileName -> (String, [File]) -> (String, [File])
+fetchFile repoId fname (acc_s, acc_f) =
+   let file = (fname, U.loadFile (repoId++"/"++fname))
    in (acc_s++(U.clearString (U.byteStringToStr (snd file))), (file : acc_f))
 
 -- Adds a list of files to the tracking list, given a particular repository state
@@ -230,7 +246,7 @@ getHeads (_, r, m, _) = concatMap (search r []) r
  
 compNodes :: Revision -> Revision -> FileLog -> Bool
 compNodes (_, x) (_, y) (_, t) = 
-      case getNodeParents y FV.getVersionNodeID t of
+      case T.getNodeParentsPolytree y FV.getVersionNodeID t of
       [] -> False
       [(p, _)] -> x == p
       [(p1, _), (p2, _)] -> x == p1 || x == p2
