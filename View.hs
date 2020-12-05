@@ -28,7 +28,7 @@ printTrackingListVerbose files = foldl (\acc v -> acc++"* "++(fst v)++"\n"++(U.b
 printFileLog :: FileLog -> String
 printFileLog log =
   let (fname, tree) = log
-  in fname ++ " :\n" ++ (printTree tree)
+  in fname ++ " :\n" ++ (T.printPolytree tree)
 
 -- Convert a revision to a string
 printRevision :: Revision -> String

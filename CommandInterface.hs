@@ -227,7 +227,7 @@ getHeads (_, r, m, _) = concatMap (search r []) r
 --  Compares nodes between two Revisions for a FileLog
 compNodes :: Revision -> Revision -> FileLog -> Bool
 compNodes (_, x) (_, y) (_, t) = 
-      case getNodeParents y FV.getVersionNodeID t of
+      case T.getNodeParentsPolytree y FV.getVersionNodeID t of
       [] -> False
       [(p, _)] -> x == p
       [(p1, _), (p2, _)] -> x == p1 || x == p2

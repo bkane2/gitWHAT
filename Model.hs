@@ -1,7 +1,7 @@
 module Model where
 
 import Tree as T
-import Tree (Tree)
+import Tree (Tree, Polytree)
 import Util as U
 
 import Data.ByteString as BS
@@ -18,7 +18,7 @@ type Revision = (RevisionID, NodeID)
 -- FileLog is a tree of FileVersion (each node is a FileVersion with two parents)
 type FileID = Int
 type FileName = String
-type FileLog = (FileName, Tree FileVersion)
+type FileLog = (FileName, Polytree FileVersion)
 -- FileVersion is a unique NodeID together with ByteString contents
 type NodeID = Int
 type FileContents = ByteString
