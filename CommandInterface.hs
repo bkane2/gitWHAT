@@ -3,6 +3,7 @@ module CommandInterface where
 import System.Environment
 import Text.Read
 import Data.List
+import qualified Data.Map as Map
 
 import Model as M
 import Util as U
@@ -249,7 +250,7 @@ status repoState flags =
 heads :: RepositoryState -> [String] -> String
 heads repoState flags =
    let (repo, hd, _) = repoState
-   in if null flags
+   in if flags == []
       then intercalate "\n" (map V.printRevision (getHeads repo))
       else V.printRevision hd
 
@@ -278,17 +279,14 @@ compNodes (_, x) (_, y) (_, t) =
 
 cat :: RepositoryState -> RevisionID -> FileName -> String
 cat (repo, _, _) revId fn = 
-   case getFile repo revId fn of
-      Nothing -> "The file was not found. Make sure file name is correct."
-      Just (_, f) -> show f
-
-getFile :: Repository -> RevisionID -> FileName -> Maybe FileVersion
-getFile repo revId fn =
-   let (_, revisions, _, files) = repo 
-       (_, nodeId) = RV.revisionLookup revId revisions
-       (_, fv) = FL.fileLogLookup fn files
+   let (_, revisions, man, logs) = repo
+       manId = snd (RV.revisionLookup revId revisions)
+       manMap = RV.manifestToMap man manId
+       nodeId = Map.lookup fn manMap
    in 
-      T.getNodeKey nodeId FV.getVersionNodeID fv
+      case nodeId of
+         Nothing -> "The file was not found. Make sure file name is correct."
+         Just x ->  show (FV.getVersionContents (FL.getVersion (FL.fileLogLookup fn logs) x))
 
 -- Two steps: 1. write files and generate string, 2. apply to repo states and update active head
 checkout :: [RepositoryState] -> String -> RevisionID -> (String, [RepositoryState])
