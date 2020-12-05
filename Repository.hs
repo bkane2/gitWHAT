@@ -16,8 +16,7 @@ hasRevision :: RevisionID -> Repository -> Bool
 hasRevision revId repo =
   let (_, revisions, _, _) = repo
   in elem revId (map fst revisions)
-  
-
+    
 -- TODO:
 -- store :: Repository -> Revision -> Repository
 -- retrieve :: Repository -> Int -> Maybe Revision
