@@ -60,7 +60,8 @@ testForValidityOfCommand command params repoStates
    -- add <repoName> <filePath1> [filePath2] [filePath3] ...
    | (command == "add") && ((length params) < 2) = (False, "add must be called as 'add <repoName> <filePath1> [filePath2] [filePath3] ...'")
    | (command == "add") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
-   | (command == "add") && (not (all U.fileExists (tail params))) = (False, "File does not exist. Make sure paths are correct.")
+   | (command == "add") && (not (all U.fileExists (map (\fname -> (params !! 0)++"/"++fname) (tail params)))) =
+      (False, "File does not exist. Make sure paths are correct.")
    -- remove <repoName> <filePath1> [filePath2] [filePath3] ...
    | (command == "remove") && ((length params) < 2) = (False, "remove must be called as 'remove <repoName> <filePath1> [filePath2] [filePath3] ...'")
    | (command == "remove") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
@@ -173,20 +174,20 @@ printRepos (x:xs) =
 add :: [RepositoryState] -> String -> [String] -> (String, [RepositoryState])
 add repoStates repoId fnames =
    let repoState = getRepoState repoId repoStates
-       (txt, files) = fetchFiles fnames
+       (txt, files) = fetchFiles repoId fnames
        message = ("Tracking list updated."++txt)
    in (message, (applyToRepoState (addFiles files) repoId repoStates))
 
 -- Reads files into memory
 -- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
-fetchFiles :: [FileName] -> (String, [File])
-fetchFiles fnames = foldr fetchFile ("", []) fnames
+fetchFiles :: String -> [FileName] -> (String, [File])
+fetchFiles repoId fnames = foldr (fetchFile repoId) ("", []) fnames
 
 -- Reads a file into memory
 -- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
-fetchFile :: FileName -> (String, [File]) -> (String, [File])
-fetchFile fname (acc_s, acc_f) =
-   let file = (fname, U.loadFile fname)
+fetchFile :: String -> FileName -> (String, [File]) -> (String, [File])
+fetchFile repoId fname (acc_s, acc_f) =
+   let file = (fname, U.loadFile (repoId++"/"++fname))
    in (acc_s++(U.clearString (U.byteStringToStr (snd file))), (file : acc_f))
 
 -- Adds a list of files to the tracking list, given a particular repository state

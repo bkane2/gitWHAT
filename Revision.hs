@@ -100,14 +100,15 @@ dumpRevisionFiles repo revId =
   let (repoId, revisions, man, logs) = repo
       manId = snd (revisionLookup revId revisions)
       manMap = manifestToMap man manId
-  in foldr (dumpRevisionFile logs) "" (Map.toList manMap)
+  in foldr (dumpRevisionFile repoId logs) "" (Map.toList manMap)
 
 -- Dumps a particular file to the corresponding directory
 -- NOTE: string output required to force IO
-dumpRevisionFile :: [FileLog] -> (FileName, NodeID) -> String -> String
-dumpRevisionFile logs (fname, nodeId) acc =
+dumpRevisionFile :: String -> [FileLog] -> (FileName, NodeID) -> String -> String
+dumpRevisionFile repoId logs (fname, nodeId) acc =
   let fcontent = getVersionContents (FL.getVersion (FL.fileLogLookup fname logs) nodeId)
-  in acc ++ (seq (seq (U.ensurePathExists fname) (U.dumpFile fname fcontent)) "")
+      fpath = repoId++"/"++fname
+  in acc ++ (seq (seq (U.ensurePathExists fpath) (U.dumpFile fpath fcontent)) "")
 
 
 -- TODO:
