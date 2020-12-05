@@ -3,6 +3,7 @@ module CommandInterface where
 import System.Environment
 import Text.Read
 import Data.List
+import qualified Data.Map as Map
 
 import Model as M
 import Util as U
@@ -161,30 +162,30 @@ printRepos (x:xs) =
 -- is stored in, returns a new list of repositories with the clone
 -- TODO: update so RepositoryState is used rather than Repository
 
---note to self while working : it's going to have to make a new repo (empty)
---then add a NEW COPY ITS OWN of the filelog, then get the head of the revision
---from the actual repostate in the new clone
-clone :: [RepositoryState] -> RepositoryID -> Maybe [RepositoryState]
-clone [] _ = Nothing
-clone repoStates id = newRepo repoStates rev [] id where
-   newRepo repoStates rev tracks id = case repoStates of
-      [] -> Nothing
-      Just (newRep, copyrevs ) where
-         newRep = initRepo ("cloned" ++ id, repoStates) --making new empty repo.. ask ben about id part
-         copyrevhead = 
+-- --note to self while working : it's going to have to make a new repo (empty)
+-- --then add a NEW COPY ITS OWN of the filelog, then get the head of the revision
+-- --from the actual repostate in the new clone
+-- clone :: [RepositoryState] -> RepositoryID -> Maybe [RepositoryState]
+-- clone [] _ = Nothing
+-- clone repoStates id = newRepo repoStates rev [] id where
+--    newRepo repoStates rev tracks id = case repoStates of
+--       [] -> Nothing
+--       Just (newRep, copyrevs ) where
+--          newRep = initRepo ("cloned" ++ id, repoStates) --making new empty repo.. ask ben about id part
+--          copyrevhead = 
 
 
 
 
 
-clone repoStates id = search repoStates [] id where
-   search repoStates visited id = case repoStates of 
-      [] -> Nothing
-      (repo_id, revs, flog, flog_list) : t -> if repo_id == id then  
-          Just (visited ++ [(repo_id, revs, flog, flog_list)] ++ t ++ [(new_id ++ "-1", revs, flog, flog_list)]) else
-          search t (visited ++ [(repo_id, revs, flog, flog_list)]) id 
-          where
-            (new_id, _, _, _) = last t
+-- clone repoStates id = search repoStates [] id where
+--    search repoStates visited id = case repoStates of 
+--       [] -> Nothing
+--       (repo_id, revs, flog, flog_list) : t -> if repo_id == id then  
+--           Just (visited ++ [(repo_id, revs, flog, flog_list)] ++ t ++ [(new_id ++ "-1", revs, flog, flog_list)]) else
+--           search t (visited ++ [(repo_id, revs, flog, flog_list)]) id 
+--           where
+--             (new_id, _, _, _) = last t
 
 -- Adds files to tracking list given a list of file paths
 add :: [RepositoryState] -> String -> [String] -> (String, [RepositoryState])
@@ -232,7 +233,7 @@ status repoState flags =
 heads :: RepositoryState -> [String] -> String
 heads repoState flags =
    let (repo, hd, _) = repoState
-   in if null flags
+   in if flags == []
       then intercalate "\n" (map V.printRevision (getHeads repo))
       else V.printRevision hd
 
