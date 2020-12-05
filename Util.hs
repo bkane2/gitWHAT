@@ -5,6 +5,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 import Data.List as L
+import qualified Data.Text as TXT
 import System.IO.Unsafe
 import System.Directory
 import System.FilePath.Posix
@@ -48,6 +49,18 @@ removeDuplicates [] = []
 removeDuplicates (x:xs)
   | elem x xs = removeDuplicates xs
   | otherwise = x : (removeDuplicates xs)
+
+-- Replaces a substring in a string
+strReplace :: String -> String -> String -> String
+strReplace a b str =
+  let at = TXT.pack a
+      bt = TXT.pack b
+      strt = TXT.pack str
+  in TXT.unpack (TXT.replace at bt strt)
+
+-- Replaces a string with an empty string
+clearString :: String -> String
+clearString str = strReplace str "" str
 
 -- File IO (wrapper function for loading file)
 -- loadFile :: String -> IO ByteString
