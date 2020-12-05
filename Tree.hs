@@ -55,6 +55,17 @@ getTree n (Branch a b c)
     where
         result = getTree n b
 
+getParents :: Tree a -> [a]
+getParents Empty = []
+getParents (Branch _ (Branch a _ _) Empty) = [a]
+getParents (Branch _ Empty (Branch a _ _)) = [a]
+getParents (Branch _ (Branch a _ _) (Branch b _ _)) = [a, b]
+getParents _ = []
+
+getNodeParents :: Eq a => Int -> (a -> Int) -> Tree a -> [a]
+getNodeParents i f t =
+    maybe [] getParents (getTreeKey i f t)
+
 -- Adds a given child, to the specified parent in the given tree
 addOneParentKey :: (Eq a) => a -> Int -> (a -> Int) -> Tree a -> Maybe (Tree a)
 addOneParentKey c p f t = 
@@ -90,7 +101,6 @@ addTwoParents c p1 p2 t =
     where
         r1 = getTree p1 t
         r2 = getTree p2 t
-
 
 toDataTree :: (Show a) => Tree a -> T.Tree [Char]
 toDataTree Empty = T.Node "" []
