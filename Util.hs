@@ -7,6 +7,7 @@ import qualified Data.ByteString.Char8 as C
 import Data.List as L
 import System.IO.Unsafe
 import System.Directory
+import System.FilePath.Posix
 import Debug.Trace
 
 -- Create NodeID by hashing on ByteString
@@ -53,6 +54,23 @@ removeDuplicates (x:xs)
 -- loadFile fname = BS.readFile fname
 loadFile :: String -> ByteString
 loadFile fname = unsafePerformIO (BS.readFile fname)
+
+-- File IO (given a directory name, remove its contents and ensure that it is empty)
+removeDirectoryContents :: String -> ()
+removeDirectoryContents dirname = (seq (unsafePerformIO (removeDirectoryRecursive dirname)) (ensureDirectoryExists dirname))
+
+-- File IO (given a directory name, ensure that it exists)
+ensureDirectoryExists :: String -> ()
+ensureDirectoryExists dirname = unsafePerformIO (createDirectoryIfMissing True dirname)
+
+-- File IO (given a file path, ensure that a path for it exists)
+ensurePathExists :: String -> ()
+ensurePathExists fname = unsafePerformIO (createDirectoryIfMissing True (takeDirectory fname))
+
+-- File IO (wrapper function for writing a file, given a path
+-- and contents)
+dumpFile :: String -> ByteString -> ()
+dumpFile fname fcontents = unsafePerformIO (BS.writeFile fname fcontents)
 
 -- Check if file exists
 fileExists :: String -> Bool
