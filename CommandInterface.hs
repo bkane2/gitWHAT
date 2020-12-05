@@ -110,7 +110,7 @@ executeCommand "init" params repoStates = init_ (params !! 0) repoStates
 executeCommand _ _ [] = ("First command must be 'init <repoName>'.", [])
 executeCommand "repos" _ repoStates = (printRepos repoStates, repoStates)
 executeCommand "clone" params repoStates = ("TBC", repoStates)
-executeCommand "add" params repoStates = ("Tracking list updated.", (applyToRepoState (add (tail params)) (params !! 0) repoStates))
+executeCommand "add" params repoStates = (add repoStates (params !! 0) (tail params))
 executeCommand "remove" params repoStates = ("Tracking list updated.", (applyToRepoState (remove (tail params)) (params !! 0) repoStates))
 executeCommand "status" params repoStates = ((status (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "heads" params repoStates = ((heads (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
@@ -164,17 +164,39 @@ printRepos (x:xs) =
 --           where
 --             (new_id, _, _, _) = last t
 
+-- Adds files to tracking list given a list of file paths
+add :: [RepositoryState] -> String -> [String] -> (String, [RepositoryState])
+add repoStates repoId fnames =
+   let repoState = getRepoState repoId repoStates
+       (txt, files) = fetchFiles fnames
+       message = ("Tracking list updated."++txt)
+   in (message, (applyToRepoState (addFiles files) repoId repoStates))
+
+-- Reads files into memory
+-- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
+fetchFiles :: [FileName] -> (String, [File])
+fetchFiles fnames = foldr fetchFile ("", []) fnames
+
+-- Reads a file into memory
+-- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
+fetchFile :: FileName -> (String, [File]) -> (String, [File])
+fetchFile fname (acc_s, acc_f) =
+   let file = (fname, U.loadFile fname)
+   in (acc_s++(U.clearString (U.byteStringToStr (snd file))), (file : acc_f))
+
 -- Adds a list of files to the tracking list, given a particular repository state
-add :: [FileName] -> RepositoryState -> RepositoryState
-add fnames repoState =
+addFiles :: [File] -> RepositoryState -> RepositoryState
+addFiles files repoState =
    let (repo, hd, trackingList) = repoState
-   in (repo, hd, foldl TL.track trackingList fnames)
+   in (repo, hd, foldl TL.track trackingList files)
+
 
 -- Removes a list of files from the tracking list, given a particular repository state
 remove :: [FileName] -> RepositoryState -> RepositoryState
 remove fnames repoState =
    let (repo, hd, trackingList) = repoState
    in (repo, hd, foldl TL.untrack trackingList fnames)
+
 
 -- Gets status of tracking list given a repository state (and possibly a -v flag for verbose)
 status :: RepositoryState -> [String] -> String
@@ -183,6 +205,7 @@ status repoState flags =
    in if flags == []
       then V.printTrackingList trackingList
       else V.printTrackingListVerbose trackingList
+
 
 -- Print heads (with an -a flag to only print the active head)
 heads :: RepositoryState -> [String] -> String
@@ -209,13 +232,13 @@ compNodes (_, x) (_, y) (_, t) =
       [(p, _)] -> x == p
       [(p1, _), (p2, _)] -> x == p1 || x == p2
 
--- TBC
 
 -- diff :: RepositoryState -> RevisionID -> RevisionID -> String
 -- diff revis1 revis2 = 
 --  if revis1 RevisionID == revis2 RevisionID then "difference not detected"
 --  else "difference detected"
 -- TBC
+
 
 -- cat :: RepositoryState -> RevisionID -> FileName -> String
 -- TBC

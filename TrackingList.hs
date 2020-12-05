@@ -8,9 +8,11 @@ emptyTrackingList :: [File]
 emptyTrackingList = []
 
 -- Loads a file from fname and adds file to the tracking list (if file already exists, read the most recent version)
-track :: [File] -> FileName -> [File]
-track f_list fname = if fname `elem` [ fname1 | (fname1, _) <- f_list ] then (track (untrack f_list fname) fname)
-                     else f_list ++ [(fname, U.loadFile fname)]
+track :: [File] -> File -> [File]
+track f_list file =
+  let (fname, _) = file
+  in if elem fname [ fname1 | (fname1, _) <- f_list ] then (track (untrack f_list fname) file)
+     else file : f_list
 
 -- Removes a file from the tracking list
 untrack :: [File] -> FileName -> [File]
