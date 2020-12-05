@@ -120,7 +120,7 @@ executeCommand "remove" params repoStates = ("Tracking list updated.", (applyToR
 executeCommand "status" params repoStates = ((status (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "heads" params repoStates = ((heads (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "diff" params repoStates = ("TBC", repoStates)
-executeCommand "cat" params repoStates = ("TBC", repoStates)
+executeCommand "cat" params repoStates = (cat (getRepoState (params !! 0) repoStates) (params !! 1) (params !! 2), repoStates)
 executeCommand "checkout" params repoStates = (checkout repoStates (params !! 0) (params !! 1))
 executeCommand "commit" params repoStates = ("Commit successful.", (applyToRepoState (commit (params !! 1)) (params !! 0) repoStates))
 executeCommand "log" params repoStates = ((log_ (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
@@ -242,18 +242,19 @@ compNodes (_, x) (_, y) (_, t) =
 --  else "difference detected"
 -- TBC
 
--- cat :: RepositoryState -> RevisionID -> FileName -> String
--- cat repo revId fn = 
---    case getFile repo revID fn of
---       Nothing -> "The file was not found. Make sure file name is correct."
---       Just f -> M.getStringContents f
+cat :: RepositoryState -> RevisionID -> FileName -> String
+cat (repo, _, _) revId fn = 
+   case getFile repo revId fn of
+      Nothing -> "The file was not found. Make sure file name is correct."
+      Just (_, f) -> show f
 
--- getFile :: RepositoryState -> RevisionID -> FileName -> Maybe(File)
--- getFile (repo , _, _) revID fn =
---    let (repId, revisions, manifest, files) = repo
---    in 
---    -- (revId, nodeId) = getRevision revId repo 
---    -- file = getFileLog filename [filelog]
+getFile :: Repository -> RevisionID -> FileName -> Maybe FileVersion
+getFile repo revId fn =
+   let (_, revisions, _, files) = repo 
+       (_, nodeId) = RV.revisionLookup revId revisions
+       (_, fv) = FL.fileLogLookup fn files
+   in 
+      T.getNodeKey nodeId FV.getVersionNodeID fv
 
 -- Two steps: 1. write files and generate string, 2. apply to repo states and update active head
 checkout :: [RepositoryState] -> String -> RevisionID -> (String, [RepositoryState])
