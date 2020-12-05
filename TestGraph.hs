@@ -13,4 +13,6 @@ tree2 = Branch (3, "3") (Branch (2, "2") (Branch (1, "1") Empty Empty) Empty) (B
 main = do
     -- putStrLn $ T.printTree tree2
     let node = T.getNodeKey 3 testKey tree2
-    print node
+    print (T.getParents tree)
+  --  print (T.addOneParentKey 4 1 tree)
+    print (T.getParents tree2)

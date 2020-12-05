@@ -2,6 +2,7 @@ module CommandInterface where
 
 import System.Environment
 import Text.Read
+import Data.List
 
 import Model as M
 import Util as U
@@ -74,6 +75,10 @@ testForValidityOfCommand command params repoStates
    -- diff <repoName> <revID1> <revID2> [filePath]
    -- TBC
    -- cat <repoName> <revID> <filePath>
+   | (command == "cat") && ((length params) /= 3) = (False, "cat must be called as 'cat <repoName> <revID> <filePath>'")
+   | (command == "cat") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
+   | (command == "cat") && (not (revisionExistsInRepo (params !! 1) (getRepoState (params !! 0) repoStates))) =
+      (False, "Revision "++(params !! 1)++" does not exist in "++(params !! 0)++".")
    -- TBC
    -- checkout <repoName> <revID>
    | (command == "checkout") && ((length params) /= 2) = (False, "checkout must be called as 'checkout <repoName> <revID>'")
@@ -115,7 +120,7 @@ executeCommand "remove" params repoStates = ("Tracking list updated.", (applyToR
 executeCommand "status" params repoStates = ((status (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "heads" params repoStates = ((heads (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "diff" params repoStates = ("TBC", repoStates)
-executeCommand "cat" params repoStates = ("TBC", repoStates)
+executeCommand "cat" params repoStates = (cat (getRepoState (params !! 0) repoStates) (params !! 1) (params !! 2), repoStates)
 executeCommand "checkout" params repoStates = (checkout repoStates (params !! 0) (params !! 1))
 executeCommand "commit" params repoStates = ("Commit successful.", (applyToRepoState (commit (params !! 1)) (params !! 0) repoStates))
 executeCommand "log" params repoStates = ((log_ (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
@@ -206,16 +211,14 @@ status repoState flags =
       then V.printTrackingList trackingList
       else V.printTrackingListVerbose trackingList
 
-
 -- Print heads (with an -a flag to only print the active head)
 heads :: RepositoryState -> [String] -> String
 heads repoState flags =
    let (repo, hd, _) = repoState
    in if null flags
-      then concatMap V.printRevision (getHeads repo)
+      then intercalate "\n" (map V.printRevision (getHeads repo))
       else V.printRevision hd
 
--- Gets the heads of a Repository
 getHeads :: Repository -> [Revision]
 getHeads (_, r, m, _) = concatMap (search r []) r
    where
@@ -224,7 +227,6 @@ getHeads (_, r, m, _) = concatMap (search r []) r
          if compNodes n h m then heads
          else search t heads n
  
---  Compares nodes between two Revisions for a FileLog
 compNodes :: Revision -> Revision -> FileLog -> Bool
 compNodes (_, x) (_, y) (_, t) = 
       case T.getNodeParentsPolytree y FV.getVersionNodeID t of
@@ -232,6 +234,7 @@ compNodes (_, x) (_, y) (_, t) =
       [(p, _)] -> x == p
       [(p1, _), (p2, _)] -> x == p1 || x == p2
 
+-- TBC
 
 -- diff :: RepositoryState -> RevisionID -> RevisionID -> String
 -- diff revis1 revis2 = 
@@ -239,10 +242,19 @@ compNodes (_, x) (_, y) (_, t) =
 --  else "difference detected"
 -- TBC
 
+cat :: RepositoryState -> RevisionID -> FileName -> String
+cat (repo, _, _) revId fn = 
+   case getFile repo revId fn of
+      Nothing -> "The file was not found. Make sure file name is correct."
+      Just (_, f) -> show f
 
--- cat :: RepositoryState -> RevisionID -> FileName -> String
--- TBC
-
+getFile :: Repository -> RevisionID -> FileName -> Maybe FileVersion
+getFile repo revId fn =
+   let (_, revisions, _, files) = repo 
+       (_, nodeId) = RV.revisionLookup revId revisions
+       (_, fv) = FL.fileLogLookup fn files
+   in 
+      T.getNodeKey nodeId FV.getVersionNodeID fv
 
 -- Two steps: 1. write files and generate string, 2. apply to repo states and update active head
 checkout :: [RepositoryState] -> String -> RevisionID -> (String, [RepositoryState])
