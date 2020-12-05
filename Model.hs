@@ -29,6 +29,9 @@ type File = (FileName, FileContents)
 getFileContents :: File -> ByteString
 getFileContents (fname, fcontents) = fcontents
 
+getStringContents:: File -> String
+getStringContents f = show (getFileContents f)
+
 getFileContentsFromList :: FileName -> [File] -> ByteString
 getFileContentsFromList fname [] = BS.empty
 getFileContentsFromList fname (x:xs) =
