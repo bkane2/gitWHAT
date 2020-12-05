@@ -9,13 +9,6 @@ import Repository as RP
 import TrackingList as TL
 import Tree as T
 
--- -- Given a Repository, prints the manifest file log
--- status :: Repository -> [IO ()]
--- status (repo_id, _, flog, _) = fmap putStrLn [show repo_id, printFileLog flog]
---  where
---   printFileLog flog = 
---    let (_, tree) = flog in printTree tree
-
 -- Converts TrackingList to a string
 printTrackingList :: [File] -> String
 printTrackingList files = foldl (\acc v -> acc++"* "++(fst v)++"\n") "Tracked modifications:\n" files

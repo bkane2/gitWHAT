@@ -63,8 +63,6 @@ clearString :: String -> String
 clearString str = strReplace str "" str
 
 -- File IO (wrapper function for loading file)
--- loadFile :: String -> IO ByteString
--- loadFile fname = BS.readFile fname
 loadFile :: String -> ByteString
 loadFile fname = unsafePerformIO (BS.readFile fname)
 
