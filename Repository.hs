@@ -23,6 +23,22 @@ getRevision revId repo =
   let (_, revisions, _, _) = repo
   in RV.revisionLookup revId revisions
   
+-- Returns all revisions from the repository that are heads (childless)
+getHeads :: Repository -> [Revision]
+getHeads (_, r, m, _) = concatMap (search r []) r
+   where
+      search [] heads n = heads ++ [n]
+      search (h:t) heads n = 
+         if isParentOf n h m then heads
+         else search t heads n
+
+-- Returns true if one revision is the parent of the other
+isParentOf :: Revision -> Revision -> FileLog -> Bool
+isParentOf (_, x) (_, y) (_, t) = 
+      case T.getNodeParentsPolytree y FV.getVersionNodeID t of
+      [] -> False
+      [(p, _)] -> x == p
+      [(p1, _), (p2, _)] -> x == p1 || x == p2
 
 -- TODO:
 -- store :: Repository -> Revision -> Repository

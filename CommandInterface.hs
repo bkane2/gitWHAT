@@ -234,23 +234,8 @@ heads :: RepositoryState -> [String] -> String
 heads repoState flags =
    let (repo, hd, _) = repoState
    in if flags == []
-      then intercalate "\n" (map V.printRevision (getHeads repo))
+      then intercalate "\n" (map V.printRevision (RP.getHeads repo))
       else V.printRevision hd
-
-getHeads :: Repository -> [Revision]
-getHeads (_, r, m, _) = concatMap (search r []) r
-   where
-      search [] heads n = heads ++ [n]
-      search (h:t) heads n = 
-         if compNodes n h m then heads
-         else search t heads n
- 
-compNodes :: Revision -> Revision -> FileLog -> Bool
-compNodes (_, x) (_, y) (_, t) = 
-      case T.getNodeParentsPolytree y FV.getVersionNodeID t of
-      [] -> False
-      [(p, _)] -> x == p
-      [(p1, _), (p2, _)] -> x == p1 || x == p2
 
 -- TBC
 
@@ -260,6 +245,7 @@ compNodes (_, x) (_, y) (_, t) =
 --  else "difference detected"
 -- TBC
 
+-- Print contents of the given filename stored in the given repository
 cat :: RepositoryState -> RevisionID -> FileName -> String
 cat (repo, _, _) revId fn = 
    let (_, revisions, man, logs) = repo
