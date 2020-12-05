@@ -3,7 +3,6 @@ module CommandInterface where
 import System.Environment
 import Text.Read
 import Data.List
-import qualified Data.Map as Map
 
 import Model as M
 import Util as U
@@ -269,17 +268,6 @@ cat (repo, _, _) revId fn =
       case nodeId of
          Nothing -> "The file was not found. Make sure file name is correct."
          Just x ->  show (FV.getVersionContents (FL.getVersion (FL.fileLogLookup fn logs) x))
-   -- let (_, revisions, _, files) = repo 
-
--- getFile :: Repository -> RevisionID -> FileName -> Maybe FileVersion
-
-   --     (_, nodeId) = RV.revisionLookup revId revisions
-   --     (_, fv) = FL.fileLogLookup fn files
-   -- in 
-   --    U.debug_ (show [fn]) $
-   --    U.debug_ (show [nodeId]) $
-   --    U.debug_ (show [fv]) $ 
-   --    T.getNodeKey nodeId FV.getVersionNodeID fv
 
 -- Two steps: 1. write files and generate string, 2. apply to repo states and update active head
 checkout :: [RepositoryState] -> String -> RevisionID -> (String, [RepositoryState])
