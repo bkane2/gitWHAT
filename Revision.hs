@@ -23,11 +23,8 @@ revise repo revId1 rev files =
       -- Make sure all files in 'files' are logged, creating new FileLogs if not
       loggedFiles = map fst logs
       logs1 = map (\fname -> FL.fileLogLookup fname logs) (U.removeDuplicates (fnames ++ loggedFiles))
-      -- Get parent manifest version and contents
-      manVersion = (FL.getVersion man manId)
-      manContents = getVersionContents manVersion
       -- Translate manifest version to a map of (FileName, NodeID) pairs, adding new ones for newly tracked files
-      manMap = nodeIDListToMap [ (fname, 0) | fname <- fnames, notElem fname loggedFiles ] (nodeIDMapFromManifest manContents)
+      manMap = nodeIDListToMap [ (fname, 0) | fname <- fnames, notElem fname loggedFiles ] (manifestToMap man manId)
       -- For each log in the revision set, create a new version and add to log given parent ID, recording new NodeID
       logsAndNodeIdsNew = map (updateLog manMap files) logs1
       logsNew = map fst logsAndNodeIdsNew
@@ -57,6 +54,12 @@ updateLog manMap files log =
        in (logNew, (fname, nodeIdNew))
      else (log, (fname, parentId))
 
+-- Given a manifest file and NodeID of the manifest revision, create mapping from FileName to NodeID
+manifestToMap :: FileLog -> NodeID -> Map FileName NodeID
+manifestToMap man manId = 
+  let manContents = getVersionContents (FL.getVersion man manId)
+  in (nodeIDMapFromManifest manContents)
+
 -- Given contents of manifest file, parse into a hash map of FileName to NodeID
 -- manifest file contents are of the form "fname1 id1,fname2 id2,..."
 nodeIDMapFromManifest :: FileContents -> Map FileName NodeID
@@ -84,6 +87,27 @@ nodeIDFromMap fname map = case (Map.lookup fname map) of
 -- Given a list of (FileName, NodeID) tuples, convert to string of form "fname1 id1,fname2 id2,..."
 nodeIDListToContents :: [(FileName, NodeID)] -> FileContents
 nodeIDListToContents lst = U.strToByteString (U.joinString "," (map (\l -> let (a,b) = l in a++" "++(show b)) lst))
+
+-- Finds a Revision in a list of Revisions by RevisionID (returning the last one if it doesn't exist)
+revisionLookup :: RevisionID -> [Revision] -> Revision
+revisionLookup _ (x:[]) = x
+revisionLookup revId (x:xs) = if (fst x) == revId then x else (revisionLookup revId xs)
+
+-- Dumps all files in a particular version for a repository to the corresponding directory
+-- NOTE: string output required to force IO
+dumpRevisionFiles :: Repository -> RevisionID -> String
+dumpRevisionFiles repo revId =
+  let (repoId, revisions, man, logs) = repo
+      manId = snd (revisionLookup revId revisions)
+      manMap = manifestToMap man manId
+  in foldr (dumpRevisionFile logs) "" (Map.toList manMap)
+
+-- Dumps a particular file to the corresponding directory
+-- NOTE: string output required to force IO
+dumpRevisionFile :: [FileLog] -> (FileName, NodeID) -> String -> String
+dumpRevisionFile logs (fname, nodeId) acc =
+  let fcontent = getVersionContents (FL.getVersion (FL.fileLogLookup fname logs) nodeId)
+  in acc ++ (seq (seq (U.ensurePathExists fname) (U.dumpFile fname fcontent)) "")
 
 
 -- TODO:

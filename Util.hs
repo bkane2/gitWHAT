@@ -5,8 +5,10 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 import Data.List as L
+import qualified Data.Text as TXT
 import System.IO.Unsafe
 import System.Directory
+import System.FilePath.Posix
 import Debug.Trace
 
 -- Create NodeID by hashing on ByteString
@@ -48,11 +50,40 @@ removeDuplicates (x:xs)
   | elem x xs = removeDuplicates xs
   | otherwise = x : (removeDuplicates xs)
 
+-- Replaces a substring in a string
+strReplace :: String -> String -> String -> String
+strReplace a b str =
+  let at = TXT.pack a
+      bt = TXT.pack b
+      strt = TXT.pack str
+  in TXT.unpack (TXT.replace at bt strt)
+
+-- Replaces a string with an empty string
+clearString :: String -> String
+clearString str = strReplace str "" str
+
 -- File IO (wrapper function for loading file)
 -- loadFile :: String -> IO ByteString
 -- loadFile fname = BS.readFile fname
 loadFile :: String -> ByteString
 loadFile fname = unsafePerformIO (BS.readFile fname)
+
+-- File IO (given a directory name, remove its contents and ensure that it is empty)
+removeDirectoryContents :: String -> ()
+removeDirectoryContents dirname = (seq (unsafePerformIO (removeDirectoryRecursive dirname)) (ensureDirectoryExists dirname))
+
+-- File IO (given a directory name, ensure that it exists)
+ensureDirectoryExists :: String -> ()
+ensureDirectoryExists dirname = unsafePerformIO (createDirectoryIfMissing True dirname)
+
+-- File IO (given a file path, ensure that a path for it exists)
+ensurePathExists :: String -> ()
+ensurePathExists fname = unsafePerformIO (createDirectoryIfMissing True (takeDirectory fname))
+
+-- File IO (wrapper function for writing a file, given a path
+-- and contents)
+dumpFile :: String -> ByteString -> ()
+dumpFile fname fcontents = unsafePerformIO (BS.writeFile fname fcontents)
 
 -- Check if file exists
 fileExists :: String -> Bool

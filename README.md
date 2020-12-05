@@ -20,19 +20,19 @@ ghc -outputdir obj Run.hs
 * log \<repoName> \[-v\]
 
 ## Acceptance test 1
-* init Repo1
+* init test
 * repos
 * \**create test/a.txt and test/b.txt with some contents*\*
-* add Repo1 test/a.txt test/b.txt
-* status Repo1
-* remove Repo1 test/a.txt
-* status Repo1
-* add Repo1 test/a.txt
-* commit Repo1 Rev1
-* status Repo1
-* log Repo1
+* add test test/a.txt test/b.txt
+* status test
+* remove test test/a.txt
+* status test
+* add test test/a.txt
+* commit test Rev1
+* status test
+* log test
 * \**modify test/a.txt and create test/c.txt with some contents*\*
-* add Repo1 test/a.txt test/c.txt
-* status Repo1
-* commit Repo1 Rev2
-* log Repo1 -v
+* add test test/a.txt test/c.txt
+* status test
+* commit test Rev2
+* log test -v

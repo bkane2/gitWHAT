@@ -111,17 +111,22 @@ evalCommand command params repoStates =
 -- Executes a command once validity of command has been verified. Returns an informative
 -- message and updated repository states
 executeCommand :: String -> [String] -> [RepositoryState] -> (String, [RepositoryState])
-executeCommand "init" params repoStates = ("Initializing new repository...", initRepo (params !! 0) repoStates)
+executeCommand "init" params repoStates = init_ (params !! 0) repoStates
 executeCommand _ _ [] = ("First command must be 'init <repoName>'.", [])
 executeCommand "repos" _ repoStates = (printRepos repoStates, repoStates)
 executeCommand "clone" params repoStates = ("TBC", repoStates)
-executeCommand "add" params repoStates = ("Tracking list updated.", (applyToRepoState (add (tail params)) (params !! 0) repoStates))
+executeCommand "add" params repoStates = (add repoStates (params !! 0) (tail params))
 executeCommand "remove" params repoStates = ("Tracking list updated.", (applyToRepoState (remove (tail params)) (params !! 0) repoStates))
 executeCommand "status" params repoStates = ((status (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "heads" params repoStates = ((heads (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "diff" params repoStates = ("TBC", repoStates)
+<<<<<<< HEAD
 -- executeCommand "cat" params repoStates = ("Locating file..." ++ (cat (getRepoState (params !! 0) repoStates) (params !! 1) (params !! 2)), repoStates)
 executeCommand "checkout" params repoStates = ("TBC", repoStates)
+=======
+executeCommand "cat" params repoStates = ("TBC", repoStates)
+executeCommand "checkout" params repoStates = (checkout repoStates (params !! 0) (params !! 1))
+>>>>>>> 219af0e87000fe7efdef66a43d06438c3295d712
 executeCommand "commit" params repoStates = ("Commit successful.", (applyToRepoState (commit (params !! 1)) (params !! 0) repoStates))
 executeCommand "log" params repoStates = ((log_ (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "merge" params repoStates = ("TBC", repoStates)
@@ -134,6 +139,12 @@ executeCommand _ _ repoStates = ("I did not understand that command.", repoState
 -- TODO: if we want to be really modular, these can be moved into a separate
 --       file/module, but it's not hugely important.
 ------------------------------------------------------------------------------------
+
+-- Creates a repository
+init_ :: RepositoryID -> [RepositoryState] -> (String, [RepositoryState])
+init_ name repoStates =
+   let message = seq (U.ensureDirectoryExists name) "Initializing new repository..."
+   in (message, initRepo name repoStates)
 
 -- Initializes an empty repository
 initRepo :: RepositoryID -> [RepositoryState] -> [RepositoryState]
@@ -163,17 +174,39 @@ printRepos (x:xs) =
 --           where
 --             (new_id, _, _, _) = last t
 
+-- Adds files to tracking list given a list of file paths
+add :: [RepositoryState] -> String -> [String] -> (String, [RepositoryState])
+add repoStates repoId fnames =
+   let repoState = getRepoState repoId repoStates
+       (txt, files) = fetchFiles fnames
+       message = ("Tracking list updated."++txt)
+   in (message, (applyToRepoState (addFiles files) repoId repoStates))
+
+-- Reads files into memory
+-- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
+fetchFiles :: [FileName] -> (String, [File])
+fetchFiles fnames = foldr fetchFile ("", []) fnames
+
+-- Reads a file into memory
+-- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
+fetchFile :: FileName -> (String, [File]) -> (String, [File])
+fetchFile fname (acc_s, acc_f) =
+   let file = (fname, U.loadFile fname)
+   in (acc_s++(U.clearString (U.byteStringToStr (snd file))), (file : acc_f))
+
 -- Adds a list of files to the tracking list, given a particular repository state
-add :: [FileName] -> RepositoryState -> RepositoryState
-add fnames repoState =
+addFiles :: [File] -> RepositoryState -> RepositoryState
+addFiles files repoState =
    let (repo, hd, trackingList) = repoState
-   in (repo, hd, foldl TL.track trackingList fnames)
+   in (repo, hd, foldl TL.track trackingList files)
+
 
 -- Removes a list of files from the tracking list, given a particular repository state
 remove :: [FileName] -> RepositoryState -> RepositoryState
 remove fnames repoState =
    let (repo, hd, trackingList) = repoState
    in (repo, hd, foldl TL.untrack trackingList fnames)
+
 
 -- Gets status of tracking list given a repository state (and possibly a -v flag for verbose)
 status :: RepositoryState -> [String] -> String
@@ -183,6 +216,8 @@ status repoState flags =
       then V.printTrackingList trackingList
       else V.printTrackingListVerbose trackingList
 
+
+-- Print heads (with an -a flag to only print the active head)
 heads :: RepositoryState -> [String] -> String
 heads repoState flags =
    let (repo, hd, _) = repoState
@@ -190,6 +225,7 @@ heads repoState flags =
       then intercalate "\n" (map V.printRevision (getHeads repo))
       else V.printRevision hd
 
+-- Gets the heads of a Repository
 getHeads :: Repository -> [Revision]
 getHeads (_, r, m, _) = concatMap (search r []) r
    where
@@ -198,6 +234,7 @@ getHeads (_, r, m, _) = concatMap (search r []) r
          if compNodes n h m then heads
          else search t heads n
  
+--  Compares nodes between two Revisions for a FileLog
 compNodes :: Revision -> Revision -> FileLog -> Bool
 compNodes (_, x) (_, y) (_, t) = 
       case getNodeParents y FV.getVersionNodeID t of
@@ -205,13 +242,13 @@ compNodes (_, x) (_, y) (_, t) =
       [(p, _)] -> x == p
       [(p1, _), (p2, _)] -> x == p1 || x == p2
 
--- TBC
 
 -- diff :: RepositoryState -> RevisionID -> RevisionID -> String
 -- diff revis1 revis2 = 
 --  if revis1 RevisionID == revis2 RevisionID then "difference not detected"
 --  else "difference detected"
 -- TBC
+
 
 -- cat :: RepositoryState -> RevisionID -> FileName -> String
 -- cat repo revId fn = 
@@ -226,9 +263,29 @@ compNodes (_, x) (_, y) (_, t) =
 --    -- (revId, nodeId) = getRevision revId repo 
 --    -- file = getFileLog filename [filelog]
 
--- checkout :: 
--- TBC
 
+-- Two steps: 1. write files and generate string, 2. apply to repo states and update active head
+checkout :: [RepositoryState] -> String -> RevisionID -> (String, [RepositoryState])
+checkout repoStates repoId revId = 
+   let repoState = getRepoState repoId repoStates
+       message = ("Checked out revision "++(updateWorkingDirectory repoState repoId revId)++revId)
+   in (message, (applyToRepoState (updateActiveHead revId) repoId repoStates))
+
+-- Step (1) of checkout; write files to corresponding directory.
+-- NOTE: string return necessary to force IO to happen (somewhat hacky approach)
+updateWorkingDirectory :: RepositoryState -> String -> RevisionID -> String
+updateWorkingDirectory repoState repoId revId = 
+   let (repo, _, _) = repoState
+   in (seq (U.removeDirectoryContents repoId) (RV.dumpRevisionFiles repo revId))
+
+-- Step (2) of checkout; return a new RepositoryState with an updated head
+updateActiveHead :: RevisionID -> RepositoryState -> RepositoryState
+updateActiveHead revId repoState =
+   let (repo, hd, _) = repoState
+   in (repo, (RP.getRevision revId repo), [])   
+   
+
+-- Commits files in the tracking list to a new revision
 commit :: RevisionID -> RepositoryState -> RepositoryState
 commit revId repoState =
    let (repo, hd, trackingList) = repoState
@@ -237,12 +294,14 @@ commit revId repoState =
    in (repoNew, (head revs), [])
       
 
+-- Logs revisions in the repository
 log_ :: RepositoryState -> [String] -> String
 log_ repoState flags =
    let (repo, hd, trackingList) = repoState
    in if flags == []
       then V.printRepository repo
       else V.printRepositoryVerbose repo
+
 
 -- merge :: RevisionID -> RevisionID -> RepositoryState -> RepositoryState
 -- TBC
