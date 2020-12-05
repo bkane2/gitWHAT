@@ -25,6 +25,25 @@ ghc -outputdir obj Run.hs
 
 Note that all filePaths are assumed to be relative to the repoName (see the acceptance tests for examples).
 
+## Module breakdown
+### Behavior-hiding module
+* Run.hs
+* CommandInterface.hs
+* View.hs
+
+### Model-hiding module
+* Model.hs
+* File.hs
+* FileVersion.hs
+* FileLog.hs
+* Revision.hs
+* Repository.hs
+* TrackingList.hs
+
+### Software Decision module
+* Util.hs
+* Tree.hs
+
 ## Acceptance test 1
 * init test
 * repos
