@@ -120,13 +120,8 @@ executeCommand "remove" params repoStates = ("Tracking list updated.", (applyToR
 executeCommand "status" params repoStates = ((status (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "heads" params repoStates = ((heads (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "diff" params repoStates = ("TBC", repoStates)
-<<<<<<< HEAD
--- executeCommand "cat" params repoStates = ("Locating file..." ++ (cat (getRepoState (params !! 0) repoStates) (params !! 1) (params !! 2)), repoStates)
-executeCommand "checkout" params repoStates = ("TBC", repoStates)
-=======
 executeCommand "cat" params repoStates = ("TBC", repoStates)
 executeCommand "checkout" params repoStates = (checkout repoStates (params !! 0) (params !! 1))
->>>>>>> 219af0e87000fe7efdef66a43d06438c3295d712
 executeCommand "commit" params repoStates = ("Commit successful.", (applyToRepoState (commit (params !! 1)) (params !! 0) repoStates))
 executeCommand "log" params repoStates = ((log_ (getRepoState (params !! 0) repoStates) (tail params)), repoStates)
 executeCommand "merge" params repoStates = ("TBC", repoStates)
@@ -216,7 +211,6 @@ status repoState flags =
       then V.printTrackingList trackingList
       else V.printTrackingListVerbose trackingList
 
-
 -- Print heads (with an -a flag to only print the active head)
 heads :: RepositoryState -> [String] -> String
 heads repoState flags =
@@ -225,7 +219,6 @@ heads repoState flags =
       then intercalate "\n" (map V.printRevision (getHeads repo))
       else V.printRevision hd
 
--- Gets the heads of a Repository
 getHeads :: Repository -> [Revision]
 getHeads (_, r, m, _) = concatMap (search r []) r
    where
@@ -234,7 +227,6 @@ getHeads (_, r, m, _) = concatMap (search r []) r
          if compNodes n h m then heads
          else search t heads n
  
---  Compares nodes between two Revisions for a FileLog
 compNodes :: Revision -> Revision -> FileLog -> Bool
 compNodes (_, x) (_, y) (_, t) = 
       case getNodeParents y FV.getVersionNodeID t of
@@ -242,13 +234,13 @@ compNodes (_, x) (_, y) (_, t) =
       [(p, _)] -> x == p
       [(p1, _), (p2, _)] -> x == p1 || x == p2
 
+-- TBC
 
 -- diff :: RepositoryState -> RevisionID -> RevisionID -> String
 -- diff revis1 revis2 = 
 --  if revis1 RevisionID == revis2 RevisionID then "difference not detected"
 --  else "difference detected"
 -- TBC
-
 
 -- cat :: RepositoryState -> RevisionID -> FileName -> String
 -- cat repo revId fn = 
@@ -262,7 +254,6 @@ compNodes (_, x) (_, y) (_, t) =
 --    in 
 --    -- (revId, nodeId) = getRevision revId repo 
 --    -- file = getFileLog filename [filelog]
-
 
 -- Two steps: 1. write files and generate string, 2. apply to repo states and update active head
 checkout :: [RepositoryState] -> String -> RevisionID -> (String, [RepositoryState])

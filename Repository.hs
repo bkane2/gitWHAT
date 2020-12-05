@@ -16,7 +16,14 @@ hasRevision :: RevisionID -> Repository -> Bool
 hasRevision revId repo =
   let (_, revisions, _, _) = repo
   in elem revId (map fst revisions)
-    
+
+-- Gets a revision from a repository by ID
+getRevision :: RevisionID -> Repository -> Revision
+getRevision revId repo =
+  let (_, revisions, _, _) = repo
+  in RV.revisionLookup revId revisions
+  
+
 -- TODO:
 -- store :: Repository -> Revision -> Repository
 -- retrieve :: Repository -> Int -> Maybe Revision
