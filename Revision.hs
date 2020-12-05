@@ -2,6 +2,7 @@ module Revision where
 
 import Model as M
 import Util as U
+import File as F
 import FileVersion as FV
 import FileLog as FL
 
@@ -47,7 +48,7 @@ updateLog manMap files log =
       parentId = nodeIDFromMap fname manMap
   in if elem fname fnames
      then
-       let contents = M.getFileContentsFromList fname files
+       let contents = F.getFileContentsFromList fname files
            versionNew = FV.createVersion contents (parentId, 0)
            nodeIdNew = FV.getVersionNodeID versionNew
            logNew = FL.addVersion log versionNew parentId Nothing

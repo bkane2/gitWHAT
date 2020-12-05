@@ -25,12 +25,3 @@ type FileContents = ByteString
 type FileVersion = (NodeID, FileContents)
 -- File represents a file, i.e. FileName and FileContents
 type File = (FileName, FileContents)
-
-getFileContents :: File -> ByteString
-getFileContents (fname, fcontents) = fcontents
-
-getFileContentsFromList :: FileName -> [File] -> ByteString
-getFileContentsFromList fname [] = BS.empty
-getFileContentsFromList fname (x:xs) =
-  let (fname1, fcontents) = x
-  in if fname1 == fname then fcontents else (getFileContentsFromList fname xs)
