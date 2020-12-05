@@ -56,7 +56,9 @@ testForValidityOfCommand command params repoStates
    | (command == "init") && ((length params) /= 1) = (False, "init must be called as 'init <repoName>'.")
    | (command == "init") && (repoExists (params !! 0) repoStates) = (False, (params !! 0)++" already exists.")
    -- clone <newRepoName> <oldRepoName>
-   -- TBC
+   | (command == "clone") && ((length params) /= 2) = (False, "init must be called as 'clone <repoName> <repoToClone>'.")
+   | (command == "clone") && (repoExists (params !! 0) repoStates) = (False, (params !! 0)++" already exists.")
+   | (command == "clone") && (not (repoExists (params !! 1) repoStates)) = (False, (params !! 1)++" does not exist.")
    -- add <repoName> <filePath1> [filePath2] [filePath3] ...
    | (command == "add") && ((length params) < 2) = (False, "add must be called as 'add <repoName> <filePath1> [filePath2] [filePath3] ...'")
    | (command == "add") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
@@ -80,7 +82,6 @@ testForValidityOfCommand command params repoStates
    | (command == "cat") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
    | (command == "cat") && (not (revisionExistsInRepo (params !! 1) (getRepoState (params !! 0) repoStates))) =
       (False, "Revision "++(params !! 1)++" does not exist in "++(params !! 0)++".")
-   -- TBC
    -- checkout <repoName> <revID>
    | (command == "checkout") && ((length params) /= 2) = (False, "checkout must be called as 'checkout <repoName> <revID>'")
    | (command == "checkout") && (not (repoExists (params !! 0) repoStates)) = (False, "Repo "++(params !! 0)++" does not exist.")
